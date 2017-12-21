@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/black">
+        <com.video.newqu.view.widget.PinchImageViewPager
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/view_pager">
+        </com.video.newqu.view.widget.PinchImageViewPager>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/top_title_bar_height">
+            <ImageView
+                android:id="@+id/ivBack"
+                style="@style/Com_nav_menubar_back_style"
+                android:src="@drawable/ban_nav_menu_back_selector_shadow_white"/>
+        </RelativeLayout>
+
+    </RelativeLayout>
+</layout>

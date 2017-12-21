@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/video_editback_color"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:gravity="center">
+
+    <LinearLayout
+        android:layout_marginTop="10dp"
+        android:id="@+id/beauty_whiten"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/whiten_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="美白"
+            android:textColor="@color/view_bg"
+            android:textSize="13sp" />
+
+        <android.support.v7.widget.AppCompatSeekBar
+            android:id="@+id/whiten_seek_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:progressBackgroundTint="#9b9b9b"
+            android:progressTint="@color/app_style"
+            android:progress="30"
+            android:thumbTint="@color/white"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/beauty_grind"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:layout_marginTop="20dp">
+
+        <TextView
+            android:id="@+id/grind_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="磨皮"
+            android:textColor="@color/view_bg"
+            android:textSize="13sp" />
+
+        <android.support.v7.widget.AppCompatSeekBar
+            android:id="@+id/grind_seek_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:progressBackgroundTint="#9b9b9b"
+            android:progressTint="@color/app_style"
+            android:progress="20"
+            android:thumbTint="@color/white"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/beauty_ruddy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:layout_marginTop="20dp">
+
+        <TextView
+            android:id="@+id/ruddy_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="红润"
+            android:textColor="@color/view_bg"
+            android:textSize="13sp" />
+
+        <android.support.v7.widget.AppCompatSeekBar
+            android:id="@+id/ruddy_seek_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:progress="10"
+            android:progressBackgroundTint="#9b9b9b"
+            android:progressTint="@color/app_style"
+            android:thumbTint="@color/white"/>
+        <!--seek_bar_selector-->
+    </LinearLayout>
+
+</LinearLayout>

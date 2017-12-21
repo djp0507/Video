@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/ll_root"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@color/background_dark">
+
+        <!--子界面内容-->
+        <RelativeLayout
+            android:id="@+id/re_conttent_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible"/>
+
+
+    <LinearLayout
+        android:id="@+id/ll_login_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_centerInParent="true"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/iv_header_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/user_not_login_thumb"/>
+        <!--iv_login_empty-->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17dp"
+            android:textSize="13sp"
+            android:textColor="@color/colorTabText"
+            android:layout_centerHorizontal="true"
+            android:layout_above="@+id/ll_login"
+            android:text="登录用户可以发布、订阅、分享视频~"/>
+
+        <TextView
+            android:id="@+id/bt_login"
+            android:layout_width="match_parent"
+            android:layout_height="39dp"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bt_re_app_style_selector"
+            android:gravity="center"
+            android:text="立即登录"
+            />
+        <!--bt_bg_orange_radius_selector-->
+
+    </LinearLayout>
+
+
+        <!--加载失败-->
+        <LinearLayout
+            android:id="@+id/ll_error_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+            <ImageView
+                android:id="@+id/iv_error_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/iv_loaddata_error"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@color/common_h33"
+                android:layout_marginTop="10dp"
+                android:text="加载失败，点击重试"/>
+        </LinearLayout>
+
+        <!--加载中-->
+        <LinearLayout
+            android:id="@+id/ll_loading_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+            <ImageView
+                android:id="@+id/iv_loading_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/view_loading_anmi"/>
+
+        </LinearLayout>
+</RelativeLayout>

@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white">
+<LinearLayout
+    android:id="@+id/ll_item"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackgroundBorderless">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.3dp"
+        android:background="@color/tab_line_color"/>
+
+    <!--作者信息-->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:id="@+id/re_top_item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="11dp">
+
+            <ImageView
+                android:id="@+id/iv_item_user_icon"
+                android:layout_width="50dp"
+                android:layout_height="50dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/iv_item_user_icon"
+                android:layout_marginLeft="8dp"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/tv_item_user_name"
+                    style="@style/video_item_list_author_name"
+                    android:text="title"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/tv_item_time"
+                        style="@style/video_item_list_author_name_time"
+                        android:visibility="gone"
+                        android:text="0:0分钟前"/>
+
+                    <TextView
+                        android:id="@+id/tv_item_play_count"
+                        style="@style/video_item_list_author_name_time"
+                        android:text="0次播放"/>
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/tv_item_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="推荐"
+            android:layout_marginTop="1dp"
+            android:layout_marginLeft="10dp"
+            android:textSize="9sp"
+            android:visibility="gone"/>
+        <RelativeLayout
+            android:id="@+id/re_follow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_item_follow_gray_transpent_selector"
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+            android:paddingBottom="4dp"
+            android:paddingTop="4dp"
+            android:layout_marginRight="11dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:clickable="true"
+            android:visibility="gone">
+            <ImageView
+                android:id="@+id/iv_item_add"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_min_add_orgin"/>
+            <TextView
+                android:id="@+id/tv_item_add"
+                android:layout_toRightOf="@+id/iv_item_add"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_centerVertical="true"
+                android:textSize="13sp"
+                android:textColor="@color/text_app_style_white_selector"
+                android:text="@string/add_follow_false"/>
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+
+    <!--视频播放-->
+    <RelativeLayout
+        android:id="@+id/re_item_video"
+        android:layout_width="match_parent"
+        android:layout_height="200dp">
+        <com.xinqu.videoplayer.XinQuVideoPlayerStandard
+            android:id="@+id/video_player"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"/>
+        <com.video.newqu.view.layout.VideoGroupRelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/re_video_group"
+            android:layout_centerInParent="true">
+        </com.video.newqu.view.layout.VideoGroupRelativeLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/video_item_list_title"
+                style="@style/video_item_list_title"
+                android:text="--"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="10dp"
+                android:paddingTop="10dp">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="3"
+                    android:orientation="horizontal">
+                    <LinearLayout
+                        android:id="@+id/ll_price"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1">
+                        <ImageView
+                            android:id="@+id/iv_item_follow_icon"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:padding="5dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/iv_follow_selector_gray"/>
+                        <TextView
+                            android:id="@+id/tv_item_follow_count"
+                            style="@style/video_item_list_com"
+                            android:text="0"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:id="@+id/ll_coment"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1">
+                        <ImageView
+                            android:id="@+id/iv_item_coment_icon"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:padding="5dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/iv_comment_selector"/>
+                        <TextView
+                            android:id="@+id/tv_item_coment_count"
+                            style="@style/video_item_list_com"
+                            android:text="0"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:id="@+id/ll_share"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1">
+                        <ImageView
+                            android:id="@+id/iv_item_share_icon"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:padding="5dp"
+                            android:layout_gravity="center_vertical"
+                            android:src="@drawable/iv_share_selector"
+                            android:background="?attr/selectableItemBackgroundBorderless"/>
+                        <TextView
+                            android:id="@+id/tv_item_share_count"
+                            style="@style/video_item_list_com"
+                            android:text="0"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1">
+                        <ImageView
+                            android:id="@+id/iv_item_menu"
+                            android:layout_width="30dp"
+                            android:padding="5dp"
+                            android:layout_height="30dp"
+                            android:layout_alignParentRight="true"
+                            android:layout_centerVertical="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_menu_gray"/>
+                </RelativeLayout>
+
+            </LinearLayout>
+
+            <!--评论-->
+
+        <LinearLayout
+            android:id="@+id/ll_coment_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+            <!--评论列表-->
+            <com.video.newqu.view.layout.WrapContentGrideView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/grid_view"
+                android:listSelector="@android:color/transparent"
+                android:numColumns="1"
+                android:stretchMode="columnWidth"
+                android:horizontalSpacing="5dp"
+                android:verticalSpacing="5dp"
+                android:fadeScrollbars="true"
+                android:fadingEdge="none"
+                android:scrollbars="none"
+                android:drawSelectorOnTop="true"/>
+            <LinearLayout
+                android:id="@+id/ll_more_coment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_app_style_selector"
+                    android:text="点击查看其他评论"/>
+                <ImageView
+                    android:layout_width="9dp"
+                    android:layout_height="15dp"
+                    android:src="@drawable/iv_video_list_item_more_selector"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="8dp"
+                    />
+            </LinearLayout>
+        </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+    <!-- 条目的分界线-->
+    <include layout="@layout/item_space_6"></include>
+</LinearLayout>
+</RelativeLayout>

@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config="main"><source path="F:\AndroidStudioProjects\Video\xinqu-video-player\src\main\shaders"/></dataSet><dataSet config="release"><source path="F:\AndroidStudioProjects\Video\xinqu-video-player\src\release\shaders"/></dataSet></merger>

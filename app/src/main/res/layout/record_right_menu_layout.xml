@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:layout_gravity="right">
+<!--android:background="@color/black"-->
+
+
+    <!--音乐-->
+    <LinearLayout
+        android:id="@+id/ll_btn_music"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_marginTop="9dp"
+        android:visibility="visible">
+        <com.video.newqu.view.widget.EffectsButton
+            android:id="@+id/btn_record_music"
+            style="@style/RecordTopMenuStyle"
+            android:background="@drawable/ic_record_music"
+            android:layout_marginTop="5dp"/>
+        <TextView
+            android:id="@+id/tv_btn_record_music"
+            style="@style/RecordToolMenuStyleTitle"
+            android:text="音乐"/>
+    </LinearLayout>
+
+
+
+    <!--MV-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_marginTop="9dp">
+
+        <com.video.newqu.view.widget.EffectsButton
+            android:id="@+id/btn_record_mv"
+            style="@style/RecordTopMenuStyle"
+            android:background="@drawable/ic_record_mv"
+            android:layout_marginTop="5dp"/>
+        <TextView
+            android:id="@+id/tv_btn_record_mv"
+            style="@style/RecordToolMenuStyleTitle"
+            android:text="MV"/>
+    </LinearLayout>
+
+    <!--美颜-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_marginTop="9dp">
+        <com.video.newqu.view.widget.EffectsButton
+            android:id="@+id/btn_camera_fail"
+            style="@style/RecordRightMenuStyle"
+            android:background="@drawable/ic_record_fair_noi"
+            android:layout_marginTop="5dp"/>
+        <!--btn_record_camera_fail_selector-->
+        <TextView
+            android:id="@+id/tv_btn_camera_fail"
+            style="@style/RecordToolMenuStyleTitle"
+            android:text="美颜"/>
+    </LinearLayout>
+
+
+
+
+    <!--滤镜-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_marginTop="9dp">
+        <com.video.newqu.view.widget.EffectsButton
+            android:id="@+id/btn_record_filter"
+            style="@style/RecordTopMenuStyle"
+            android:background="@drawable/ic_record_filter"
+            android:layout_marginTop="5dp"/>
+        <TextView
+            android:id="@+id/tv_btn_record_filter"
+            style="@style/RecordToolMenuStyleTitle"
+            android:text="滤镜"/>
+    </LinearLayout>
+</LinearLayout>
