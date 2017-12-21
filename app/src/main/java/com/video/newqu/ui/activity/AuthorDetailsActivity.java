@@ -1,6 +1,5 @@
 package com.video.newqu.ui.activity;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;

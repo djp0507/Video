@@ -40,7 +40,7 @@ import com.video.newqu.util.ToastUtils;
 /**
  * TinyHung@outlook.com
  * 2017/3/17 15:46
- * 片段基类
+ * 弹窗式片段基类
  */
 
 public abstract class BaseDialogFragment<VS extends ViewDataBinding> extends DialogFragment {

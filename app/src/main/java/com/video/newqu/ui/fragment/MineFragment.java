@@ -29,6 +29,7 @@ import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.ksyun.media.shortvideo.utils.AuthInfoManager;
 import com.tbruyelle.rxpermissions.RxPermissions;
 import com.video.newqu.R;
 import com.video.newqu.VideoApplication;
@@ -37,12 +38,14 @@ import com.video.newqu.adapter.XinQuFragmentPagerAdapter;
 import com.video.newqu.base.BaseFragment;
 import com.video.newqu.bean.MineTabInfo;
 import com.video.newqu.bean.MineUserInfo;
+import com.video.newqu.bean.NotifactionMessageInfo;
 import com.video.newqu.bean.ShareInfo;
 import com.video.newqu.bean.VideoDetailsMenu;
 import com.video.newqu.contants.ApplicationManager;
 import com.video.newqu.contants.Constant;
 import com.video.newqu.databinding.FragmentMineBinding;
 import com.video.newqu.event.MessageEvent;
+import com.video.newqu.manager.ThreadManager;
 import com.video.newqu.ui.activity.AuthorDetailsActivity;
 import com.video.newqu.ui.activity.ClipImageActivity;
 import com.video.newqu.ui.activity.MainActivity;
@@ -54,6 +57,7 @@ import com.video.newqu.util.AndroidNFileUtils;
 import com.video.newqu.util.AnimationUtil;
 import com.video.newqu.util.CommonUtils;
 import com.video.newqu.util.FileUtils;
+import com.video.newqu.util.KSYAuthorPermissionsUtil;
 import com.video.newqu.util.Logger;
 import com.video.newqu.util.ScreenUtils;
 import com.video.newqu.util.SystemUtils;
@@ -61,14 +65,19 @@ import com.video.newqu.util.ToastUtils;
 import com.video.newqu.view.widget.GlideCircleTransform;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
+
+import me.leolin.shortcutbadger.ShortcutBadger;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 
@@ -91,6 +100,7 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
     private boolean isUpdata=true;//默认是否需要刷新
     private int mImageBgHeight;
     private final static int PERMISSION_REQUEST_CAMERA = 1;//摄像
+    private boolean isNewMsgEcho=true;//是否回显消息
 
     @Override
     public void onAttach(Context context) {
@@ -110,7 +120,6 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
         showContentView();
         mUserInfoPresenter = new UserInfoPresenter(getActivity());
         mUserInfoPresenter.attachView(this);
-
         mUserInfo= (MineUserInfo.DataBean.InfoBean)ApplicationManager.getInstance().getCacheExample().getAsObject(Constant.CACHE_MINE_USER_DATA);
         initTabAdapter();
         initHeaderUserData();
@@ -119,6 +128,7 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
             if(null!=mMainActivity){
                 mMainActivity.showMineRefreshTips();
             }
+            checkedMsgCount();
         }else{
             isUpdata=false;
         }
@@ -235,6 +245,10 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
                     case R.id.btn_share:
                         shareMineHome();
                         break;
+                    //通知消息
+                    case R.id.btn_notifaction:
+                        startTargetActivity(Constant.KEY_FRAGMENT_NOTIFACTION,"通知消息",null,0);
+                        break;
                 }
             }
         };
@@ -245,6 +259,7 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
         bindingView.tvFansCount.setOnClickListener(onClickListener);
         bindingView.tvFollowCount.setOnClickListener(onClickListener);
         bindingView.btnShare.setOnClickListener(onClickListener);
+        bindingView.btnNotifaction.setOnClickListener(onClickListener);
         bindingView.ivUserImageBg.measure(0,0);
         mImageBgHeight = bindingView.frameLayout.getLayoutParams().height;
         //添加滚动监听
@@ -311,7 +326,12 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
         }
     }
 
-
+    @Override
+    public void onResume() {
+        super.onResume();
+        checkedMsgCount();
+        isNewMsgEcho=false;
+    }
 
     /**
      * 获取用户基本信息
@@ -638,18 +658,55 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
         }
     }
 
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
     /**
-     * 刷新消息的数量
-     * @param count
+     * 刷新通知
      */
-    public void updataMessageTabCount(int count) {
-        //我的作品界面
-        if(null!=mMineTabInfos&&mMineTabInfos.size()>0){
-            MineTabInfo mineTabInfo = mMineTabInfos.get(2);
-            if(null!=mineTabInfo){
-                mineTabInfo.setAboutCount(count);
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(MessageEvent event) {
+        if (null != event) {
+            if (TextUtils.equals(Constant.EVENT_UPDATA_MESSAGE_UI, event.getMessage())) {
+                bindingView.viewTips.setVisibility(View.VISIBLE);
             }
-            updataTabAdapter();
+        }
+    }
+
+    /**
+     * 检查未读消息数量
+     */
+    private void checkedMsgCount() {
+        if(null== VideoApplication.getInstance().getUserData()) return;
+        List<NotifactionMessageInfo> messageList= (List<NotifactionMessageInfo>) ApplicationManager.getInstance().getCacheExample().getAsObject(VideoApplication.getLoginUserID()+Constant.CACHE_USER_MESSAGE);
+        if(null!=messageList&&messageList.size()>0){
+            int badgeCount=0;
+            for (NotifactionMessageInfo notifactionMessageInfo : messageList) {
+                if(!notifactionMessageInfo.isRead()){
+                    badgeCount++;
+                }
+            }
+            //处理桌面图标
+            if(badgeCount>0){
+                if(null!=mMainActivity){
+                    mMainActivity.setMessageCount(badgeCount);
+                }
+                ShortcutBadger.applyCount(context.getApplicationContext(), badgeCount); //for 1.1.4+
+                bindingView.viewTips.setVisibility(View.VISIBLE);
+            }else{
+                ShortcutBadger.applyCount(context.getApplicationContext(), 0); //for 1.1.4+
+                bindingView.viewTips.setVisibility(View.INVISIBLE);
+            }
         }
     }
 
@@ -657,7 +714,6 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
      * 照片选择弹窗
      */
     private void showPictureSelectorPop() {
-
         try {
             //初始化
             if(null==mOutFilePath)  mOutFilePath = new File(Constant.IMAGE_PATH + IMAGE_DRR_PATH);

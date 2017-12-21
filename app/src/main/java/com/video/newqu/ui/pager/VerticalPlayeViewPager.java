@@ -3,10 +3,10 @@ package com.video.newqu.ui.pager;
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.FragmentManager;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.view.View;
@@ -17,6 +17,7 @@ import com.danikula.videocache.HttpProxyCacheServer;
 import com.tbruyelle.rxpermissions.RxPermissions;
 import com.video.newqu.R;
 import com.video.newqu.VideoApplication;
+import com.video.newqu.base.BasePager;
 import com.video.newqu.bean.ComentList;
 import com.video.newqu.bean.FollowVideoList;
 import com.video.newqu.bean.ShareInfo;
@@ -75,14 +76,12 @@ import rx.functions.Action1;
  * 视频播放的片段View
  */
 
-public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsContract.View, ShareFinlishListener {
+public class VerticalPlayeViewPager extends BasePager<VerticalPagerVideoPlayLayoutBinding>implements TopicClickListener, VideoDetailsContract.View, ShareFinlishListener {
 
     private static final String TAG = VerticalPlayeViewPager.class.getSimpleName();
-    private VerticalPagerVideoPlayLayoutBinding bindingView;
     private FollowVideoList.DataBean.ListsBean mVideoBean;
     private final int mPoistion;//当前正在显示第几个Item
     private final int mFragmentType;//当前界面类型
-    private VerticalVideoPlayActivity mActivity;
     private VideoDetailsPresenter mVideoDetailsPresenter;
     private ScaleAnimation mFollowScaleAnimation;
     //弹幕相关
@@ -100,28 +99,16 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
      * @param position 用来标记数据的处理，当listsBean发生变化，通知外面刷新并保存最新数据
      */
     public VerticalPlayeViewPager(VerticalVideoPlayActivity context, FollowVideoList.DataBean.ListsBean listsBean, int position,int fragmentType) {
-        bindingView = DataBindingUtil.inflate(context.getLayoutInflater(), R.layout.vertical_pager_video_play_layout,null,false);
+        super(context);
         this.mPoistion=position;
         this.mFragmentType=fragmentType;
-        mActivity=context;
         this.mVideoBean=listsBean;
-        initViews();
-        initVideoData();
-    }
-
-    /**
-     * 返回ViewLayout
-     * @return
-     */
-    public View getView() {
-        return bindingView.getRoot();
+        setContentView(R.layout.vertical_pager_video_play_layout);
     }
 
 
-    /**
-     * 初始化
-     */
-    private void initViews() {
+    @Override
+    public void initViews() {
         //设置播放进度回调
         bindingView.videoPlayer.setOnVideoPlayerProgressListener(new WindowVideoPlayerStandard.OnVideoPlayerProgressListener() {
             @Override
@@ -152,8 +139,10 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
                 switch (view.getId()) {
                     //关闭
                     case R.id.btn_close:
-                        if(null!=mActivity&&!mActivity.isFinishing()){
-                            mActivity.onBackPressed();
+                        if(null!=mContext&&!mContext.isFinishing()){
+                            if(mContext instanceof VerticalVideoPlayActivity){
+                                mContext.onBackPressed();
+                            }
                         }
                         break;
                     //菜单
@@ -174,8 +163,10 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
                                 }
                             }
                         }else{
-                            if(null!=mActivity&&!mActivity.isFinishing()){
-                                mActivity.login();
+                            if(null!=mContext&&!mContext.isFinishing()){
+                                if(mContext instanceof VerticalVideoPlayActivity){
+                                    ((VerticalVideoPlayActivity) mContext).login();
+                                }
                             }
                         }
 
@@ -187,8 +178,10 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
 
                     //点击了用户头像
                     case R.id.iv_video_author_icon:
-                        if(null!=mActivity&&!mActivity.isFinishing()){
-                           mActivity.setCureenItem(1);
+                        if(null!=mContext&&!mContext.isFinishing()){
+                            if(mContext instanceof VerticalVideoPlayActivity){
+                                ((VerticalVideoPlayActivity) mContext).setCureenItem(1);
+                            }
                         }
                         break;
                     //打开评论面板，弹出输入框
@@ -226,111 +219,20 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
         bindingView.llShare.setOnClickListener(onClickListener);
         bindingView.btnMenu.setOnClickListener(onClickListener);
         bindingView.llTopBar.setOnClickListener(onClickListener);
-        if(null!=mActivity&&!mActivity.isFinishing()){
-            mVideoDetailsPresenter = new VideoDetailsPresenter(mActivity);
+        if(null!=mContext&&!mContext.isFinishing()){
+            mVideoDetailsPresenter = new VideoDetailsPresenter(mContext);
             mVideoDetailsPresenter.attachView(this);
         }
         mFollowScaleAnimation = AnimationUtil.followAnimation();
     }
 
-    /**
-     * 下载视频
-     */
-    private void downloadVideo() {
-        if(null==mActivity||mActivity.isFinishing()) return;
-        if(null==mVideoBean||TextUtils.isEmpty(mVideoBean.getPath()))  return;
-        //检查SD读写权限
-        RxPermissions.getInstance(mActivity).request(Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<Boolean>() {
-            @Override
-            public void call(Boolean aBoolean) {
-                if(null!=aBoolean&&aBoolean){
-                    //用户已登录
-                    if(null!=VideoApplication.getInstance().getUserData()){
-                        //发布此时品的主人正式观看的用户自己
-                        if(TextUtils.equals(mVideoBean.getUser_id(),VideoApplication.getLoginUserID())){
-                            new VideoDownloadComposrTask(mActivity,mVideoBean.getPath()).start();
-                        }else{
-                            //用户允许下载
-                            if(null!=mVideoBean.getDownload_permiss()&&TextUtils.equals("0",mVideoBean.getDownload_permiss())){
-                                new VideoDownloadComposrTask(mActivity,mVideoBean.getPath()).start();
-                                //用户不允许下载
-                            }else{
-                                ToastUtils.shoCenterToast("发布此视频的用户未开放他人下载此视频权限！");
-                            }
-                        }
-                        //用户未登录
-                    }else{
-                        if(null!=mActivity&&!mActivity.isFinishing()){
-                            mActivity.login();
-                        }
-                    }
-                }else{
-                    android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(mActivity)
-                            .setTitle("SD读取权限申请失败")
-                            .setMessage("存储权限被拒绝，请务必授予我们存储权限！是否现在去设置？");
-                    builder.setNegativeButton("去设置", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            SystemUtils.getInstance().startAppDetailsInfoActivity(mActivity,141);
-                        }
-                    });
-                    builder.show();
-                }
-            }
-        });
-    }
 
-    /**
-     * 显示留言面板
-     * @param flag
-     */
-    private void showCommentView(boolean flag) {
-        if(null!=mActivity&&!mActivity.isFinishing()){
-            VerticalVideoPlayCommendFragment fragment = VerticalVideoPlayCommendFragment.newInstance(mVideoBean.getVideo_id(), TextUtils.isEmpty(mVideoBean.getComment_times()) ? "0" : mVideoBean.getComment_times(), TextUtils.isEmpty(mVideoBean.getAdd_time()) ? System.currentTimeMillis() + "" : mVideoBean.getAdd_time(),flag);
-            fragment.setOnDismissListener(new VerticalVideoPlayCommendFragment.OnFragmentDataChangeListener() {
-                @Override
-                public void onDismiss(int commentCount) {
-                    bindingView.tvComment.setText(commentCount+"");
-                    //通知保存界面数据
-                    if(null!=mVideoBean){
-                        mVideoBean.setComment_times(commentCount+"");
-                        VideoEventMessage videoEventMessage=new VideoEventMessage();
-                        videoEventMessage.setMessage(Constant.EVENT_VIDEO_PLAY_PAGE_UPDATA);
-                        videoEventMessage.setListsBean(mVideoBean);
-                        videoEventMessage.setPoistion(mPoistion);
-                        EventBus.getDefault().post(videoEventMessage);//通知持有者刷新界面
-                    }
-                }
-
-                @Override
-                public void onAddComment(ComentList.DataBean.CommentListBean newCommentData) {
-                    if(null!=newCommentData&&ConfigSet.getInstance().isShowAutoComment()){
-                        Logger.d(TAG,"onDismiss--newCommentData="+newCommentData.getId());
-                        if(null!=mQueue&&null!=mDanmakuContext){
-//                            mQueue.add(newCommentData);//添加至任务栈
-                            //立即生成一个弹幕
-                            addTempDanmaku(newCommentData.getComment());
-                        }else if(null!=newCommentData){
-                            if(null!=mVideoBean&&null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isLoading()){
-                                mVideoDetailsPresenter.getComentList(mVideoBean.getVideo_id(),"1000","1000");
-                            }
-                        }
-                    }
-                }
-            });
-            fragment.show(mActivity.getSupportFragmentManager(),"comment");
-        }
-    }
-
-
-    /**
-     * 初始化视频信息
-     */
-    public void initVideoData(){
-
-        if(null!=mActivity&&!mActivity.isFinishing()&&null!=bindingView){
+    @Override
+    public void initData() {
+        if(null==mVideoBean) return;
+        if(null!=mContext&&!mContext.isFinishing()&&null!=bindingView){
             //视频封面
-            Glide.with(mActivity)
+            Glide.with(mContext)
                     .load(mVideoBean.getCover())
                     .thumbnail(0.1f)
                     .placeholder(Cheeses.IMAGE_EMPTY_COLOR[Utils.getRandomNum(0,5)])
@@ -341,7 +243,7 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
                     .skipMemoryCache(true)//跳过内存缓存
                     .into(bindingView.videoPlayer.thumbImageView);
             //作者封面
-            Glide.with(mActivity)
+            Glide.with(mContext)
                     .load(Utils.imageUrlChange(mVideoBean.getLogo()))
                     .error(R.drawable.iv_mine)
                     .placeholder(R.drawable.iv_mine)
@@ -350,7 +252,7 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
                     .diskCacheStrategy(DiskCacheStrategy.ALL)//缓存源资源和转换后的资源
                     .centerCrop()//中心点缩放
                     .skipMemoryCache(true)//跳过内存缓存
-                    .transform(new GlideCircleTransform(mActivity))
+                    .transform(new GlideCircleTransform(mContext))
                     .into(bindingView.ivVideoAuthorIcon);
 
             try {
@@ -431,6 +333,100 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
                 PostPlayStateHanderUtils.postVideoPlayState(mVideoBean.getVideo_id(),(int)bindingView.videoPlayer.getDuration(),1,null);
             }
         });
+    }
+
+    /**
+     * 下载视频
+     */
+    private void downloadVideo() {
+        if(null==mContext||mContext.isFinishing()) return;
+        if(null==mVideoBean||TextUtils.isEmpty(mVideoBean.getPath()))  return;
+        //检查SD读写权限
+        RxPermissions.getInstance(mContext).request(Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<Boolean>() {
+            @Override
+            public void call(Boolean aBoolean) {
+                if(null!=aBoolean&&aBoolean){
+                    //用户已登录
+                    if(null!=VideoApplication.getInstance().getUserData()){
+                        //发布此时品的主人正式观看的用户自己
+                        if(TextUtils.equals(mVideoBean.getUser_id(),VideoApplication.getLoginUserID())){
+                            new VideoDownloadComposrTask(mContext,mVideoBean.getPath()).start();
+                        }else{
+                            //用户允许下载
+                            if(null!=mVideoBean.getDownload_permiss()&&TextUtils.equals("0",mVideoBean.getDownload_permiss())){
+                                new VideoDownloadComposrTask(mContext,mVideoBean.getPath()).start();
+                                //用户不允许下载
+                            }else{
+                                ToastUtils.shoCenterToast("发布此视频的用户未开放他人下载此视频权限！");
+                            }
+                        }
+                        //用户未登录
+                    }else{
+                        if(null!=mContext&&!mContext.isFinishing()){
+                            if(mContext instanceof VerticalVideoPlayActivity){
+                                ((VerticalVideoPlayActivity) mContext).login();
+                            }
+                        }
+                    }
+                }else{
+                    android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(mContext)
+                            .setTitle("SD读取权限申请失败")
+                            .setMessage("存储权限被拒绝，请务必授予我们存储权限！是否现在去设置？");
+                    builder.setNegativeButton("去设置", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            SystemUtils.getInstance().startAppDetailsInfoActivity(mContext,141);
+                        }
+                    });
+                    builder.show();
+                }
+            }
+        });
+    }
+
+    /**
+     * 显示留言面板
+     * @param flag
+     */
+    private void showCommentView(boolean flag) {
+        if(null!=mContext&&!mContext.isFinishing()){
+            VerticalVideoPlayCommendFragment fragment = VerticalVideoPlayCommendFragment.newInstance(mVideoBean.getVideo_id(), TextUtils.isEmpty(mVideoBean.getComment_times()) ? "0" : mVideoBean.getComment_times(), TextUtils.isEmpty(mVideoBean.getAdd_time()) ? System.currentTimeMillis() + "" : mVideoBean.getAdd_time(),flag);
+            fragment.setOnDismissListener(new VerticalVideoPlayCommendFragment.OnFragmentDataChangeListener() {
+                @Override
+                public void onDismiss(int commentCount) {
+                    bindingView.tvComment.setText(commentCount+"");
+                    //通知保存界面数据
+                    if(null!=mVideoBean){
+                        mVideoBean.setComment_times(commentCount+"");
+                        VideoEventMessage videoEventMessage=new VideoEventMessage();
+                        videoEventMessage.setMessage(Constant.EVENT_VIDEO_PLAY_PAGE_UPDATA);
+                        videoEventMessage.setListsBean(mVideoBean);
+                        videoEventMessage.setPoistion(mPoistion);
+                        EventBus.getDefault().post(videoEventMessage);//通知持有者刷新界面
+                    }
+                }
+
+                @Override
+                public void onAddComment(ComentList.DataBean.CommentListBean newCommentData) {
+                    if(null!=newCommentData&&ConfigSet.getInstance().isShowAutoComment()){
+                        Logger.d(TAG,"onDismiss--newCommentData="+newCommentData.getId());
+                        if(null!=mQueue&&null!=mDanmakuContext){
+//                            mQueue.add(newCommentData);//添加至任务栈
+                            //立即生成一个弹幕
+                            addTempDanmaku(newCommentData.getComment());
+                        }else if(null!=newCommentData){
+                            if(null!=mVideoBean&&null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isLoading()){
+                                mVideoDetailsPresenter.getComentList(mVideoBean.getVideo_id(),"1000","1000");
+                            }
+                        }
+                    }
+                }
+            });
+            if(mContext instanceof VerticalVideoPlayActivity){
+                FragmentManager supportFragmentManager = ((VerticalVideoPlayActivity) mContext).getSupportFragmentManager();
+                fragment.show(supportFragmentManager,"comment");
+            }
+        }
     }
 
     /**
@@ -542,7 +538,7 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
      * @param comment
      */
     private void addTempDanmaku(String comment) {
-        if(null!=bindingView&&null!=mActivity&&!mActivity.isFinishing()){
+        if(null!=bindingView&&null!=mContext&&!mContext.isFinishing()){
 
             if(null==mParser) {
                 mParser = new AcFunDanmakuParser();
@@ -604,7 +600,7 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
      * 供ParentView生命周期调用
      * mQueue一这个对象为准
      */
-    public void onChildonPause() {
+    public void onPause() {
         if(null!=bindingView&&null!=mQueue&&bindingView.svDanmaku.isPrepared()){
             bindingView.svDanmaku.pause();
         }
@@ -614,7 +610,7 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
      * 供ParentView生命周期调用
      */
 
-    public void onChildResume() {
+    public void onResume() {
         if(null!=bindingView&&null!=mQueue&&bindingView.svDanmaku.isPrepared()&&bindingView.svDanmaku.isPaused()){
             bindingView.svDanmaku.resume();
             //重新启动handler消息机制，触发弹幕显示
@@ -653,7 +649,7 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
     /**
      * 销毁调用
      */
-    public void onChildDestroy() {
+    public void onDestroy() {
         if(null!=mVideoDetailsPresenter){
             mVideoDetailsPresenter.detachView();
             mVideoDetailsPresenter=null;
@@ -662,7 +658,7 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
             mFollowScaleAnimation.cancel();
         }
         releaseDanmaku();
-        mVideoBean=null;mActivity=null;mFollowScaleAnimation=null;bindingView=null;
+        mVideoBean=null;mFollowScaleAnimation=null;bindingView=null;
     }
 
     /**
@@ -764,7 +760,7 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
         //用户自己的作品过来的时候
         if(mFragmentType==Constant.FRAGMENT_TYPE_WORKS){
             if(!TextUtils.equals("0",mVideoBean.getIs_private())){
-                ToastUtils.showErrorToast(mActivity,null,null,"私密视频无法分享，请先更改隐私权限");
+                showErrorToast(null,null,"私密视频无法分享，请先更改隐私权限");
                 return;
             }
         }
@@ -774,8 +770,10 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
         shareInfo.setUrl(mVideoBean.getPath());
         shareInfo.setVideoID(mVideoBean.getVideo_id());
         shareInfo.setImageLogo(mVideoBean.getCover());
-        if(null!=mActivity&&!mActivity.isFinishing()){
-            mActivity.onShare(shareInfo,this);
+        if(null!=mContext&&!mContext.isFinishing()){
+            if(mContext instanceof VerticalVideoPlayActivity){
+                ((VerticalVideoPlayActivity) mContext).onShare(shareInfo,this);
+            }
         }
     }
 
@@ -785,9 +783,7 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
      */
     private void priceVideo(boolean showDialog) {
         if(!Utils.isCheckNetwork()){
-            if(null!=mActivity&&!mActivity.isFinishing()){
-                mActivity.showNetWorkTips();
-            }
+            showNetWorkTips();
             return;
         }
         if(null==mVideoBean){
@@ -798,7 +794,7 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
             if(null!=mVideoBean){
                 if(mFragmentType==Constant.FRAGMENT_TYPE_WORKS){
                     if(!TextUtils.equals("0",mVideoBean.getIs_private())){
-                        ToastUtils.showErrorToast(mActivity,null,null,"私密视频无法收藏，请先更改隐私权限");
+                        ToastUtils.showErrorToast(mContext,null,null,"私密视频无法收藏，请先更改隐私权限");
                         return;
                     }
                 }
@@ -806,8 +802,10 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
                 //点击的按钮
                 if(showDialog){
                     if(null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isPriseVideo()){
-                        if(null!=mActivity&&!mActivity.isFinishing()){
-                            mActivity.showProgressDialog(1==mVideoBean.getIs_interest()?"取消点赞中..":"点赞中..",true);
+                        if(null!=mContext&&!mContext.isFinishing()){
+                            if(mContext instanceof VerticalVideoPlayActivity){
+                                ((VerticalVideoPlayActivity) mContext).showProgressDialog(1==mVideoBean.getIs_interest()?"取消点赞中..":"点赞中..",true);
+                            }
                         }
                         mVideoDetailsPresenter.onPriseVideo(mVideoBean.getVideo_id(),VideoApplication.getLoginUserID());
                     }
@@ -823,8 +821,10 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
             //未登录
         }else{
             ToastUtils.shoCenterToast("点赞需要登录账户");
-            if(null!=mActivity&&!mActivity.isFinishing()){
-                mActivity.login();
+            if(null!=mContext&&!mContext.isFinishing()){
+                if(mContext instanceof VerticalVideoPlayActivity){
+                    ((VerticalVideoPlayActivity) mContext).login();
+                }
             }
         }
     }
@@ -837,7 +837,7 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
         if(null==mVideoBean){
             return;
         }
-        if(null!=mActivity&&!mActivity.isFinishing()){
+        if(null!=mContext&&!mContext.isFinishing()){
             List<VideoDetailsMenu> list=new ArrayList<>();
             VideoDetailsMenu videoDetailsMenu6=new VideoDetailsMenu();
             videoDetailsMenu6.setItemID(6);
@@ -892,7 +892,7 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
                 videoDetailsMenu4.setItemName("举报此视频");
                 list.add(videoDetailsMenu4);
             }
-            CommonMenuDialog commonMenuDialog =new CommonMenuDialog(mActivity);
+            CommonMenuDialog commonMenuDialog =new CommonMenuDialog(mContext);
             commonMenuDialog.setData(list);
             commonMenuDialog.setOnItemClickListener(new CommonMenuDialog.OnItemClickListener() {
                 @Override
@@ -900,13 +900,15 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
                     //公开、私密视频
                     switch (itemID) {
                         case 1:
-                            if(null!=mActivity&&!mActivity.isFinishing()&&null!=VideoApplication.getInstance().getUserData()){
+                            if(null!=mContext&&!mContext.isFinishing()&&null!=VideoApplication.getInstance().getUserData()){
                                 //原本是公开的，设置为私密前提示一下
                                 if(TextUtils.equals("0",mVideoBean.getIs_private())){
                                     privateVideoTips();
                                 }else{
                                     if(null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isPrivateVideo()){
-                                        mActivity.showProgressDialog("操作中..",true);
+                                        if(mContext instanceof VerticalVideoPlayActivity){
+                                            ((VerticalVideoPlayActivity) mContext).showProgressDialog("操作中..",true);
+                                        }
                                         mVideoDetailsPresenter.setVideoPrivateState(mVideoBean.getVideo_id(),VideoApplication.getLoginUserID());
                                     }
                                 }
@@ -915,15 +917,17 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
                         //下载权限
                         case 2:
                             if(null!=VideoApplication.getInstance().getUserData()){
-                                if(null!=mActivity&&null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isDownloadPermiss()){
-                                    mActivity.showProgressDialog("操作中..",true);
+                                if(null!=mContext&&null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isDownloadPermiss()){
+                                    if(mContext instanceof VerticalVideoPlayActivity){
+                                        ((VerticalVideoPlayActivity) mContext).showProgressDialog("操作中..",true);
+                                    }
                                     mVideoDetailsPresenter.changeVideoDownloadPermission(mVideoBean.getVideo_id(),VideoApplication.getLoginUserID());
                                 }
                             }
                             break;
                         //删除视频
                         case 3:
-                            if(null!=mActivity&&!mActivity.isFinishing()&&null!=VideoApplication.getInstance().getUserData()){
+                            if(null!=mContext&&!mContext.isFinishing()&&null!=VideoApplication.getInstance().getUserData()){
                                 deleteVideoTips();
                             }
                             break;
@@ -933,7 +937,9 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
                                 onReportVideo(mVideoBean.getVideo_id());
                             }else{
                                 ToastUtils.shoCenterToast("举报视频需要登录账户");
-                                mActivity.login();
+                                if(mContext instanceof VerticalVideoPlayActivity){
+                                    ((VerticalVideoPlayActivity) mContext).login();
+                                }
                             }
                             break;
                         //举报用户
@@ -942,7 +948,9 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
                                 onReportUser(mVideoBean.getUser_id());
                             }else{
                                 ToastUtils.shoCenterToast("举报用户需要登录账户");
-                                mActivity.login();
+                                if(mContext instanceof VerticalVideoPlayActivity){
+                                    ((VerticalVideoPlayActivity) mContext).login();
+                                }
                             }
                             break;
                         //字幕显示与否
@@ -975,15 +983,17 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
      */
     private void deleteVideoTips() {
         //删除视频提示
-        new android.support.v7.app.AlertDialog.Builder(mActivity)
+        new android.support.v7.app.AlertDialog.Builder(mContext)
                 .setTitle("删除视频提示")
-                .setMessage(mActivity.getResources().getString(R.string.detele_video_tips))
+                .setMessage(mContext.getResources().getString(R.string.detele_video_tips))
                 .setNegativeButton("取消", null)
                 .setPositiveButton("删除",
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        mActivity.showProgressDialog("删除视频中..",true);
+                        if(mContext instanceof VerticalVideoPlayActivity){
+                            ((VerticalVideoPlayActivity) mContext).showProgressDialog("删除视频中..",true);
+                        }
                         if(null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isDeteleVideo()){
                             mVideoDetailsPresenter.deleteVideo(VideoApplication.getLoginUserID(),mVideoBean.getVideo_id());
                         }
@@ -998,16 +1008,18 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
      */
     private void privateVideoTips() {
 
-        new android.support.v7.app.AlertDialog.Builder(mActivity)
+        new android.support.v7.app.AlertDialog.Builder(mContext)
                 .setTitle("隐私视频设置")
-                .setMessage(mActivity.getResources().getString(R.string.set_peivate_video_tips))
+                .setMessage(mContext.getResources().getString(R.string.set_peivate_video_tips))
                 .setNegativeButton("取消", null)
                 .setPositiveButton("确定",
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 if(null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isPrivateVideo()){
-                                    if(null!=mActivity) mActivity.showProgressDialog("操作中..",true);
+                                    if(mContext instanceof VerticalVideoPlayActivity){
+                                        ((VerticalVideoPlayActivity) mContext).showProgressDialog("操作中..",true);
+                                    }
                                     mVideoDetailsPresenter.setVideoPrivateState(mVideoBean.getVideo_id(),VideoApplication.getLoginUserID());
                                 }
                             }
@@ -1022,8 +1034,10 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
      */
     private void onReportVideo(String video_id) {
         if(null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isReportVideo()){
-            if(null!=mActivity&&!mActivity.isFinishing()){
-                mActivity.showProgressDialog("举报视频中...",true);
+            if(null!=mContext&&!mContext.isFinishing()){
+                if(mContext instanceof VerticalVideoPlayActivity){
+                    ((VerticalVideoPlayActivity) mContext).showProgressDialog("举报视频中...",true);
+                }
             }
             mVideoDetailsPresenter.onReportVideo(VideoApplication.getLoginUserID(),video_id);
         }
@@ -1035,8 +1049,10 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
      */
     private void onReportUser(String accuseUserId) {
         if(null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isReportUser()){
-            if(null!=mActivity&&!mActivity.isFinishing()){
-                mActivity.showProgressDialog("举报用户中...",true);
+            if(null!=mContext&&!mContext.isFinishing()){
+                if(mContext instanceof VerticalVideoPlayActivity){
+                    ((VerticalVideoPlayActivity) mContext).showProgressDialog("举报用户中...",true);
+                }
             }
             mVideoDetailsPresenter.onReportUser(VideoApplication.getLoginUserID(),accuseUserId);
         }
@@ -1071,14 +1087,14 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
      * @param fragmentTarge
      */
     protected void startTargetActivity(int fragmentTarge,String title,String authorID,int authorType,String topicID) {
-        if(null!=mActivity&&!mActivity.isFinishing()){
-            Intent intent=new Intent(mActivity, ContentFragmentActivity.class);
+        if(null!=mContext&&!mContext.isFinishing()){
+            Intent intent=new Intent(mContext, ContentFragmentActivity.class);
             intent.putExtra(Constant.KEY_FRAGMENT_TYPE,fragmentTarge);
             intent.putExtra(Constant.KEY_TITLE,title);
             intent.putExtra(Constant.KEY_AUTHOR_ID,authorID);
             intent.putExtra(Constant.KEY_AUTHOR_TYPE,authorType);
             intent.putExtra(Constant.KEY_VIDEO_TOPIC_ID,topicID);
-            mActivity.startActivity(intent);
+            mContext.startActivity(intent);
         }
     }
 
@@ -1087,8 +1103,10 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
 
     @Override
     public void showErrorView() {
-        if(null!=mActivity&&!mActivity.isFinishing()){
-            mActivity.closeProgressDialog();
+        if(null!=mContext&&!mContext.isFinishing()){
+            if(mContext instanceof VerticalVideoPlayActivity){
+                ((VerticalVideoPlayActivity) mContext).closeProgressDialog();
+            }
         }
     }
 
@@ -1151,8 +1169,10 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
     @Override
     public void showPriseResult(String data) {
 
-        if(null!=mActivity&&!mActivity.isFinishing()){
-            mActivity.closeProgressDialog();
+        if(null!=mContext&&!mContext.isFinishing()){
+            if(mContext instanceof VerticalVideoPlayActivity){
+                ((VerticalVideoPlayActivity) mContext).closeProgressDialog();
+            }
         }
         if(TextUtils.isEmpty(data)){
             Logger.d(TAG,"data="+data);
@@ -1203,9 +1223,7 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
                         EventBus.getDefault().post(videoEventMessage);//通知持有者刷新界面
                     }
                 }else{
-                    if(null!=mActivity&&!mActivity.isFinishing()){
-                        mActivity.showErrorToast(null,null,"收藏失败");
-                    }
+                    showErrorToast(null,null,"收藏失败");
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -1219,8 +1237,10 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
      */
     @Override
     public void showFollowUserResult(String data) {
-        if(null!=mActivity&&!mActivity.isFinishing()){
-            mActivity.closeProgressDialog();
+        if(null!=mContext&&!mContext.isFinishing()){
+            if(mContext instanceof VerticalVideoPlayActivity){
+                ((VerticalVideoPlayActivity) mContext).closeProgressDialog();
+            }
         }
         try {
             JSONObject jsonObject=new JSONObject(data);
@@ -1267,8 +1287,10 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
      */
     @Override
     public void showReportUserResult(String data) {
-        if(null!=mActivity&&!mActivity.isFinishing()){
-            mActivity.closeProgressDialog();
+        if(null!=mContext&&!mContext.isFinishing()){
+            if(mContext instanceof VerticalVideoPlayActivity){
+                ((VerticalVideoPlayActivity) mContext).closeProgressDialog();
+            }
         }
         if(!TextUtils.isEmpty(data)){
             try {
@@ -1290,8 +1312,10 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
      */
     @Override
     public void showReportVideoResult(String data) {
-        if(null!=mActivity&&!mActivity.isFinishing()){
-            mActivity.closeProgressDialog();
+        if(null!=mContext&&!mContext.isFinishing()){
+            if(mContext instanceof VerticalVideoPlayActivity){
+                ((VerticalVideoPlayActivity) mContext).closeProgressDialog();
+            }
         }
         if(!TextUtils.isEmpty(data)){
             try {
@@ -1321,8 +1345,10 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
      */
     @Override
     public void showDeteleVideoResult(String result) {
-        if(null!=mActivity&&!mActivity.isFinishing()){
-            mActivity.closeProgressDialog();
+        if(null!=mContext&&!mContext.isFinishing()){
+            if(mContext instanceof VerticalVideoPlayActivity){
+                ((VerticalVideoPlayActivity) mContext).closeProgressDialog();
+            }
             if (!TextUtils.isEmpty(result)) {
                 try {
                     JSONObject jsonObject=new JSONObject(result);
@@ -1362,8 +1388,10 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
     @Override
     public void showSetVideoPrivateStateResult(String result) {
 
-        if(null!=mActivity&&!mActivity.isFinishing()) {
-            mActivity.closeProgressDialog();
+        if(null!=mContext&&!mContext.isFinishing()) {
+            if(mContext instanceof VerticalVideoPlayActivity){
+                ((VerticalVideoPlayActivity) mContext).closeProgressDialog();
+            }
             if (!TextUtils.isEmpty(result)) {
                 try {
                     JSONObject jsonObject=new JSONObject(result);
@@ -1403,8 +1431,10 @@ public class VerticalPlayeViewPager implements TopicClickListener, VideoDetailsC
     @Override
     public void showChangeVideoDownloadPermissionResult(String result) {
 
-        if(null!=mActivity&&!mActivity.isFinishing()){
-            mActivity.closeProgressDialog();
+        if(null!=mContext&&!mContext.isFinishing()){
+            if(mContext instanceof VerticalVideoPlayActivity){
+                ((VerticalVideoPlayActivity) mContext).closeProgressDialog();
+            }
             if (!TextUtils.isEmpty(result)) {
                 try {
                     JSONObject jsonObject=new JSONObject(result);

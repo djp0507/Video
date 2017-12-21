@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
+import android.support.v4.app.FragmentManager;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.view.View;
@@ -16,6 +17,7 @@ import com.danikula.videocache.HttpProxyCacheServer;
 import com.tbruyelle.rxpermissions.RxPermissions;
 import com.video.newqu.R;
 import com.video.newqu.VideoApplication;
+import com.video.newqu.base.BasePager;
 import com.video.newqu.bean.ComentList;
 import com.video.newqu.bean.ShareInfo;
 import com.video.newqu.bean.SingComentInfo;
@@ -62,11 +64,9 @@ import rx.functions.Action1;
  * 专为历史播放记录特殊性创建的ViewPager
  */
 
-public class VerticalHistoryVidepPlayViewPager implements TopicClickListener, VideoDetailsContract.View{
+public class VerticalHistoryVidepPlayViewPager extends BasePager<PagerVideoPlayerLayoutBinding> implements TopicClickListener, VideoDetailsContract.View{
 
     private static final String TAG = VerticalHistoryVidepPlayViewPager.class.getSimpleName();
-    private final PagerVideoPlayerLayoutBinding bindingView;
-    private  VerticalHistoryVideoPlayActivity  mContext;
     private final UserPlayerVideoHistoryList mVideoBean;
     private final int mPoistion;//当前正在显示第几个Item
     private VideoDetailsPresenter mVideoDetailsPresenter;
@@ -79,31 +79,18 @@ public class VerticalHistoryVidepPlayViewPager implements TopicClickListener, Vi
      * @param position 用来标记数据的处理，当listsBean发生变化新并保存最新数据
      */
     public VerticalHistoryVidepPlayViewPager(VerticalHistoryVideoPlayActivity context, UserPlayerVideoHistoryList listsBean, int position) {
-        bindingView = DataBindingUtil.inflate(context.getLayoutInflater(), R.layout.pager_video_player_layout,null,false);
+        super(context);
         this.mPoistion=position;
-        mContext=context;
         this.mVideoBean=listsBean;
-        initViews();
-        initVideoData();
-    }
-
-    /**
-     * 返回ViewLayout
-     * @return
-     */
-    public View getView() {
-        return bindingView.getRoot();
+        setContentView(R.layout.pager_video_player_layout);
     }
 
 
-    /**
-     * 初始化
-     */
-    private void initViews() {
-
+    @Override
+    public void initViews() {
         //设置播放进度回调
         bindingView.videoPlayer.setOnVideoPlayerProgressListener(new WindowVideoPlayerStandard.OnVideoPlayerProgressListener() {
-            
+
             @Override
             public void onStateAutoComplete(int progress) {
                 bindingView.bottomProgress.setProgress(progress);
@@ -151,7 +138,9 @@ public class VerticalHistoryVidepPlayViewPager implements TopicClickListener, Vi
                             }
                         }else{
                             if(null!=mContext&&!mContext.isFinishing()){
-                                mContext.login();
+                                if(mContext instanceof VerticalHistoryVideoPlayActivity){
+                                    ((VerticalHistoryVideoPlayActivity) mContext).login();
+                                }
                             }
                         }
 
@@ -172,7 +161,10 @@ public class VerticalHistoryVidepPlayViewPager implements TopicClickListener, Vi
 
                                 }
                             });
-                            fragment.show(mContext.getSupportFragmentManager(),"comment");
+                            if(mContext instanceof VerticalHistoryVideoPlayActivity){
+                                FragmentManager supportFragmentManager = ((VerticalHistoryVideoPlayActivity) mContext).getSupportFragmentManager();
+                                fragment.show(supportFragmentManager,"comment");
+                            }
                         }
 
                         break;
@@ -193,7 +185,10 @@ public class VerticalHistoryVidepPlayViewPager implements TopicClickListener, Vi
                                 }
 
                             });
-                            fragment.show(mContext.getSupportFragmentManager(),"comment");
+                            if(mContext instanceof VerticalHistoryVideoPlayActivity){
+                                FragmentManager supportFragmentManager = ((VerticalHistoryVideoPlayActivity) mContext).getSupportFragmentManager();
+                                fragment.show(supportFragmentManager,"comment");
+                            }
                         }
                         break;
                     //分享
@@ -234,43 +229,10 @@ public class VerticalHistoryVidepPlayViewPager implements TopicClickListener, Vi
         mFollowScaleAnimation = AnimationUtil.followAnimation();
     }
 
-    /**
-     * 显示和隐藏控制器
-     */
-    private boolean isHideing=false;
-    private void showControllerView(boolean isShow) {
-        if(isShow){
-            if(bindingView.reControllerView.getVisibility()==View.VISIBLE) return;
-            bindingView.reControllerView.setVisibility(View.VISIBLE);
-            TranslateAnimation translateAnimation = AnimationUtil.moveLeftToViewLocation();
-            bindingView.reControllerView.startAnimation(translateAnimation);
-        }else{
-            if(isHideing) return;
-            if(bindingView.reControllerView.getVisibility()==View.GONE) return;
-            isHideing=true;
-            TranslateAnimation translateAnimation = AnimationUtil.moveToViewRight();
-            translateAnimation.setAnimationListener(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {
-                }
 
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    isHideing=false;
-                    bindingView.reControllerView.setVisibility(View.GONE);
-                }
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-                }
-            });
-            bindingView.reControllerView.startAnimation(translateAnimation);
-        }
-    }
-
-    /**
-     * 初始化视频信息
-     */
-    public void initVideoData(){
+    @Override
+    public void initData() {
+        if(null==mVideoBean)return;
         if(null!=mContext&&!mContext.isFinishing()){
             //视频封面
             Glide.with(mContext)
@@ -346,7 +308,9 @@ public class VerticalHistoryVidepPlayViewPager implements TopicClickListener, Vi
                     }else{
                         if(null!=mContext&&!mContext.isFinishing()){
                             ToastUtils.shoCenterToast("点赞需要登录账户");
-                            mContext.login();
+                            if(mContext instanceof VerticalHistoryVideoPlayActivity){
+                                ((VerticalHistoryVideoPlayActivity) mContext).login();
+                            }
                         }
                     }
                 }
@@ -385,6 +349,39 @@ public class VerticalHistoryVidepPlayViewPager implements TopicClickListener, Vi
             }
         });
         bindingView.reVideoGroup.setImageVisibility();
+    }
+
+    /**
+     * 显示和隐藏控制器
+     */
+    private boolean isHideing=false;
+    private void showControllerView(boolean isShow) {
+        if(isShow){
+            if(bindingView.reControllerView.getVisibility()==View.VISIBLE) return;
+            bindingView.reControllerView.setVisibility(View.VISIBLE);
+            TranslateAnimation translateAnimation = AnimationUtil.moveLeftToViewLocation();
+            bindingView.reControllerView.startAnimation(translateAnimation);
+        }else{
+            if(isHideing) return;
+            if(bindingView.reControllerView.getVisibility()==View.GONE) return;
+            isHideing=true;
+            TranslateAnimation translateAnimation = AnimationUtil.moveToViewRight();
+            translateAnimation.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    isHideing=false;
+                    bindingView.reControllerView.setVisibility(View.GONE);
+                }
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+                }
+            });
+            bindingView.reControllerView.startAnimation(translateAnimation);
+        }
     }
 
 
@@ -471,7 +468,9 @@ public class VerticalHistoryVidepPlayViewPager implements TopicClickListener, Vi
                             //用户未登录
                         }else{
                             if(null!=mContext&&!mContext.isFinishing()){
-                                mContext.login();
+                                if(mContext instanceof VerticalHistoryVideoPlayActivity){
+                                    ((VerticalHistoryVideoPlayActivity) mContext).login();
+                                }
                             }
                         }
                     }else{
@@ -505,7 +504,9 @@ public class VerticalHistoryVidepPlayViewPager implements TopicClickListener, Vi
         shareInfo.setVideoID(mVideoBean.getVideoId());
         shareInfo.setImageLogo(mVideoBean.getVideoCover());
         if(null!=mContext&&!mContext.isFinishing()){
-            mContext.onShare(shareInfo);
+            if(mContext instanceof VerticalHistoryVideoPlayActivity){
+                ((VerticalHistoryVideoPlayActivity) mContext).onShare(shareInfo);
+            }
         }
     }
 
@@ -516,9 +517,7 @@ public class VerticalHistoryVidepPlayViewPager implements TopicClickListener, Vi
     private void priceVideo(boolean showDialog) {
 
         if(!Utils.isCheckNetwork()){
-            if(null!=mContext&&!mContext.isFinishing()){
-                mContext.showNetWorkTips();
-            }
+            showNetWorkTips();
             return;
         }
 
@@ -531,7 +530,9 @@ public class VerticalHistoryVidepPlayViewPager implements TopicClickListener, Vi
                 if(null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isPriseVideo()){
                     if(showDialog) {
                         if(null!=mContext&&!mContext.isFinishing()){
-                            mContext.showProgressDialog(1==mVideoBean.getIs_interest()?"取消点赞中..":"点赞中..",true);
+                            if(mContext instanceof VerticalHistoryVideoPlayActivity){
+                                ((VerticalHistoryVideoPlayActivity) mContext).showProgressDialog(1==mVideoBean.getIs_interest()?"取消点赞中..":"点赞中..",true);
+                            }
                         }
                     }
                     mVideoDetailsPresenter.onPriseVideo(mVideoBean.getVideoId(),VideoApplication.getLoginUserID());
@@ -540,7 +541,9 @@ public class VerticalHistoryVidepPlayViewPager implements TopicClickListener, Vi
         }else{
             if(null!=mContext&&!mContext.isFinishing()){
                 ToastUtils.shoCenterToast("点赞需要登录账户");
-                mContext.login();
+                if(mContext instanceof VerticalHistoryVideoPlayActivity){
+                    ((VerticalHistoryVideoPlayActivity) mContext).login();
+                }
             }
         }
     }
@@ -649,7 +652,9 @@ public class VerticalHistoryVidepPlayViewPager implements TopicClickListener, Vi
     @Override
     public void showPriseResult(String data) {
         if(null!=mContext&&!mContext.isFinishing()){
-            mContext.closeProgressDialog();
+            if(mContext instanceof VerticalHistoryVideoPlayActivity){
+                ((VerticalHistoryVideoPlayActivity) mContext).closeProgressDialog();
+            }
         }
         try {
             JSONObject jsonObject=new JSONObject(data);
@@ -692,9 +697,7 @@ public class VerticalHistoryVidepPlayViewPager implements TopicClickListener, Vi
                     EventBus.getDefault().post(videoEventMessage);//通知持有者刷新界面
                 }
             }else{
-                if(null!=mContext&&!mContext.isFinishing()){
-                    mContext.showErrorToast(null,null,"收藏失败");
-                }
+                showErrorToast(null,null,"收藏失败");
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -710,7 +713,9 @@ public class VerticalHistoryVidepPlayViewPager implements TopicClickListener, Vi
     @Override
     public void showFollowUserResult(String data) {
         if(null!=mContext&&!mContext.isFinishing()){
-            mContext.closeProgressDialog();
+            if(mContext instanceof VerticalHistoryVideoPlayActivity){
+                ((VerticalHistoryVideoPlayActivity) mContext).closeProgressDialog();
+            }
         }
         try {
             JSONObject jsonObject=new JSONObject(data);

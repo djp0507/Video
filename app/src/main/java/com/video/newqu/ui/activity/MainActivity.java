@@ -408,63 +408,6 @@ public class MainActivity extends TopBaseActivity implements MainContract.View {
     }
 
 
-
-    /**
-     * 检查更新
-     */
-    private void checkedUpdata() {
-        new APKUpdataManager(MainActivity.this).checkedBuild(new OnUpdataStateListener() {
-            @Override
-            public void onNeedUpdata( UpdataApkInfo updataApkInfo) {
-                final UpdataApkInfo.DataBean dataBean = updataApkInfo.getData();
-                if(null!=dataBean){
-                    BuildManagerDialog buildManagerDialog =new BuildManagerDialog(MainActivity.this, R.style.UpdataDialogAnimation);
-                    buildManagerDialog.setUpdataData(dataBean);
-                    buildManagerDialog.setOnUpdataListener(new BuildManagerDialog.OnUpdataListener() {
-                        @Override
-                        public void onUpdata() {
-                            //检查SD卡权限
-                            RxPermissions.getInstance(MainActivity.this).request(Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<Boolean>() {
-                                @Override
-                                public void call(Boolean aBoolean) {
-                                    if(null!=aBoolean&&aBoolean){
-                                        Intent service = new Intent(MainActivity.this, DownLoadService.class);
-                                        service.putExtra("downloadurl", dataBean.getDownload());
-                                        if(1==Utils.getNetworkType()){
-                                            ToastUtils.shoCenterToast("正在下载中");
-                                        }else{
-                                            ToastUtils.shoCenterToast("下载任务将在连接WIFI后自动开始,请不要关闭本软件");
-                                        }
-                                        startService(service);
-                                    }else{
-                                        ToastUtils.shoCenterToast("下载失败！SD卡下载权限被拒绝");
-                                    }
-                                }
-                            });
-                        }
-                    });
-                    buildManagerDialog.show();
-                }
-            }
-
-            @Override
-            public void onNotUpdata(String data) {
-                checkedUploadVideoEvent();//检查上传任务
-            }
-
-            @Override
-            public void onUpdataError(String data) {
-                checkedUploadVideoEvent();//检查上传任务
-            }
-        });
-    }
-
-
-    public int getCureenPoistion() {
-        return mCureenViewIndex;
-    }
-
-
     public void onResume() {
         super.onResume();
         //用户登录了
@@ -622,7 +565,6 @@ public class MainActivity extends TopBaseActivity implements MainContract.View {
         if(bindingView.tvMenuMineMsgCount.getVisibility()==View.VISIBLE){
             bindingView.tvMenuMineMsgCount.setText("");
             bindingView.tvMenuMineMsgCount.setVisibility(View.GONE);
-            ShortcutBadger.removeCount(getApplicationContext()); //for 1.1.4+
         }
     }
 
@@ -732,6 +674,13 @@ public class MainActivity extends TopBaseActivity implements MainContract.View {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        //这个时候DialogFragment无法回调onActivityResult方法.由父窗体来回调结果到子View中,发出订阅的事件，如果用户信息编辑的界面已经初始化可以收到订阅消息
+        MessageEvent messageEvent=new MessageEvent();
+        messageEvent.setData(data);
+        messageEvent.setMessage("CAMERA_REQUEST");
+        messageEvent.setRequestCode(requestCode);
+        messageEvent.setResultState(resultCode);
+        EventBus.getDefault().post(messageEvent);
         UMShareAPI.get(this).onActivityResult(requestCode,resultCode,data);
         //登录意图，需进一步确认
         if (Constant.INTENT_LOGIN_EQUESTCODE == requestCode && resultCode == Constant.INTENT_LOGIN_RESULTCODE) {
@@ -815,7 +764,6 @@ public class MainActivity extends TopBaseActivity implements MainContract.View {
             if (TextUtils.equals(Constant.EVENT_NEW_MESSAGE, event.getMessage())) {
                 int extar = event.getExtar();
                 setMessageCount(extar);
-                Logger.d(TAG,"onMessageEvent,未读消息数量"+extar);
                 EventBus.getDefault().post(new MessageEvent(Constant.EVENT_UPDATA_MESSAGE_UI));
              //网络发生了变化
             } else if (TextUtils.equals("event_home_updload_weicacht", event.getMessage())) {

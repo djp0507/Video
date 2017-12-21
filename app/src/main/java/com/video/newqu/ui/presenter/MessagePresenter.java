@@ -4,6 +4,7 @@ package com.video.newqu.ui.presenter;
 import android.content.Context;
 import com.kk.securityhttp.engin.HttpCoreEngin;
 import com.video.newqu.base.RxPresenter;
+import com.video.newqu.bean.NetMessageInfo;
 import com.video.newqu.contants.NetContants;
 import com.video.newqu.ui.contract.MessageContract;
 import com.video.newqu.util.Logger;
@@ -39,22 +40,18 @@ public class MessagePresenter extends RxPresenter<MessageContract.View> implemen
     public void getMessageList(String userID,String page,String pageSize) {
         if(isLoading) return;
         isLoading=true;
+        Logger.d(TAG,"userID"+userID);
         Map<String,String> params=new HashMap<>();
-//        params.put("user_id",userID);
-//        params.put("page",page);
-//        params.put("page_size",pageSize);
-
-        Subscription subscribe = HttpCoreEngin.get(context).rxpost(NetContants.BASE_VIDEO_HOST + "recommend", String.class, null, true, true, true).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<String>() {
+        params.put("user_id",userID);
+        params.put("page",page);
+        params.put("page_size",pageSize);
+        Subscription subscribe = HttpCoreEngin.get(context).rxpost(NetContants.BASE_VIDEO_HOST + "recommend", NetMessageInfo.class, null, true, true, true).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<NetMessageInfo>() {
             @Override
-            public void call(String data) {
+            public void call(NetMessageInfo data) {
                 isLoading=false;
-//                if(null!=data&&1==data.getCode()&&null!=data.getData()&&data.getData().size()>0){
-//                    mView.showMessageInfo(data);
-//                }else if(null!=data&&1==data.getCode()&&null!=data.getData()&&data.getData().size()<=0){
-//                    mView.getMessageEmpty("没有更多了");
-//                }else{
-//                    mView.getMessageError("加载失败");
-//                }
+                if(null!=data){
+                    Logger.d(TAG,"data="+data.getId());
+                }
                 Logger.d(TAG,"data="+data);
             }
         });

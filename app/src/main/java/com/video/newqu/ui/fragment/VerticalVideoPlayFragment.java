@@ -270,7 +270,7 @@ public class VerticalVideoPlayFragment extends BaseVideoPlayFragment<FragmentVid
                 if(itemPoistion==next.getKey()){
                     VerticalPlayeViewPager playerTempPager = next.getValue();
                     if(null!=playerTempPager){
-                        playerTempPager.onChildDestroy();
+                        playerTempPager.onDestroy();
                     }
                 }
             }
@@ -289,7 +289,7 @@ public class VerticalVideoPlayFragment extends BaseVideoPlayFragment<FragmentVid
                 if(itemPoistion==next.getKey()){
                     VerticalPlayeViewPager playerTempPager = next.getValue();
                     if(null!=playerTempPager){
-                        playerTempPager.onChildResume();
+                        playerTempPager.onResume();
                     }
                 }
             }
@@ -308,7 +308,7 @@ public class VerticalVideoPlayFragment extends BaseVideoPlayFragment<FragmentVid
                 if(itemPoistion==next.getKey()){
                     VerticalPlayeViewPager playerTempPager = next.getValue();
                     if(null!=playerTempPager){
-                        playerTempPager.onChildonPause();
+                        playerTempPager.onPause();
                     }
                 }
             }

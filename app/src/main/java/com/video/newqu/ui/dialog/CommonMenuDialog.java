@@ -1,8 +1,8 @@
 package com.video.newqu.ui.dialog;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
@@ -28,7 +28,7 @@ public class CommonMenuDialog extends Dialog {
     private final Context context;
     private VideoDetailsMenuAdapter mVideoDetailsMenuAdapter;
 
-    public CommonMenuDialog(AppCompatActivity context) {
+    public CommonMenuDialog(Activity context) {
         super(context, R.style.SpinKitViewSaveFileDialogAnimation);
         setContentView(R.layout.dialog_video_details_menu);
         this.context=context;

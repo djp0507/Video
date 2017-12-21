@@ -1,15 +1,20 @@
 package com.video.newqu.base;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.databinding.ViewDataBinding;
-import android.graphics.drawable.AnimationDrawable;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import com.video.newqu.R;
+import com.video.newqu.contants.Constant;
 import com.video.newqu.databinding.BasePagerBinding;
+import com.video.newqu.listener.SnackBarListener;
+import com.video.newqu.util.ToastUtils;
+import java.security.InvalidParameterException;
 
 /**
  * TinyHung@Outlook.com
@@ -22,100 +27,76 @@ public abstract class BasePager <T extends ViewDataBinding>{
     protected T bindingView;
     private BasePagerBinding baseBindingView;
     protected final Activity mContext;
-    private AnimationDrawable mAnimationDrawable;
-
 
     public BasePager(Activity context){
         this.mContext=context;
+        boolean flag=context instanceof Activity;
+        if(!flag){
+            throw new InvalidParameterException("请传入Activity类型的上下文");
+        }
     }
 
+    /**
+     * 设置LayoutID
+     * @param layoutID
+     */
     public void setContentView(int layoutID){
         //父View
         baseBindingView = DataBindingUtil.inflate(LayoutInflater.from(mContext), R.layout.base_pager, null, false);
         //子View
-        bindingView = DataBindingUtil.inflate(mContext.getLayoutInflater(),layoutID, null, false);
+        bindingView = DataBindingUtil.inflate(mContext.getLayoutInflater(),layoutID, (ViewGroup) baseBindingView.getRoot().getParent(), false);
         //父内容容器
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         bindingView.getRoot().setLayoutParams(params);
         baseBindingView.viewContent.addView(bindingView.getRoot());//添加至父容器
-
-        mAnimationDrawable = (AnimationDrawable) baseBindingView.ivErrorIcon.getDrawable();
-        if(null!=mAnimationDrawable&&!mAnimationDrawable.isRunning()){
-            mAnimationDrawable.start();
-        }
-        baseBindingView.llLoadingError.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onRefresh();
-            }
-        });
+        initViews();
+        initData();
     }
-
 
     public View getView() {
-        return null==baseBindingView?null: baseBindingView.getRoot();
+        return baseBindingView.getRoot();
     }
 
+    public abstract void initViews();
+    public abstract void initData();
+    public void onDestroy(){}
+    public void onResume(){}
+    public void onPause(){}
 
-    protected void showLoadingView() {
-
-        if(baseBindingView.viewContent.getVisibility()!=View.GONE){
-            baseBindingView.viewContent.setVisibility(View.GONE);
-        }
-        if(baseBindingView.llLoadingError.getVisibility()!=View.GONE){
-            baseBindingView.llLoadingError.setVisibility(View.GONE);
-        }
-        if(baseBindingView.llLoadingView.getVisibility()!=View.VISIBLE){
-            baseBindingView.llLoadingView.setVisibility(View.VISIBLE);
-        }
-        if(null!=mAnimationDrawable&&!mAnimationDrawable.isRunning()){
-            mAnimationDrawable.start();
-        }
-    }
-
-
-
-    protected void showContentView() {
-
-        if(baseBindingView.llLoadingError.getVisibility()!=View.GONE){
-            baseBindingView.llLoadingError.setVisibility(View.GONE);
-        }
-        if(baseBindingView.llLoadingView.getVisibility()!=View.GONE){
-            baseBindingView.llLoadingView.setVisibility(View.GONE);
-        }
-
-        if(null!=mAnimationDrawable&&mAnimationDrawable.isRunning()){
-            mAnimationDrawable.stop();
-        }
-
-        if(baseBindingView.viewContent.getVisibility()!=View.VISIBLE){
-            baseBindingView.viewContent.setVisibility(View.VISIBLE);
+    /**
+     * 失败吐司
+     * @param action
+     * @param snackBarListener
+     * @param message
+     */
+    protected void showErrorToast(String action, SnackBarListener snackBarListener, String message){
+        if(null!=mContext&&!mContext.isFinishing()){
+            ToastUtils.showSnackebarStateToast(mContext.getWindow().getDecorView(),action,snackBarListener, R.drawable.snack_bar_error_white, Constant.SNACKBAR_ERROR,message);
         }
     }
 
-
-    protected void showLoadErrorView() {
-
-        if(baseBindingView.viewContent.getVisibility()!=View.GONE){
-            baseBindingView.viewContent.setVisibility(View.GONE);
-        }
-
-        if(baseBindingView.llLoadingView.getVisibility()!=View.GONE){
-            baseBindingView.llLoadingView.setVisibility(View.GONE);
-        }
-
-        if(null!=mAnimationDrawable&&mAnimationDrawable.isRunning()){
-            mAnimationDrawable.stop();
-        }
-
-        if(baseBindingView.llLoadingError.getVisibility()!=View.VISIBLE){
-            baseBindingView.llLoadingError.setVisibility(View.VISIBLE);
-        }
+    /**
+     * 统一的网络设置入口
+     */
+    protected void showNetWorkTips(){
+        showErrorToast("网络设置", new SnackBarListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Settings.ACTION_AIRPLANE_MODE_SETTINGS);//直接进入网络设置
+                mContext.startActivity(intent);
+            }
+        }, "没有可用的网络链接");
     }
 
-
-    /**子类实现可实现刷新功能*/
-    protected  void onRefresh(){
-
+    /**
+     * 成功吐司
+     * @param action
+     * @param snackBarListener
+     * @param message
+     */
+    protected void showFinlishToast(String action, SnackBarListener snackBarListener, String message){
+        if(null!=mContext&&!mContext.isFinishing()){
+            ToastUtils.showSnackebarStateToast(mContext.getWindow().getDecorView(),action,snackBarListener, R.drawable.snack_bar_done_white, Constant.SNACKBAR_DONE,message);
+        }
     }
 }
