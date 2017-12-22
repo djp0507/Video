@@ -12,6 +12,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.umeng.analytics.MobclickAgent;
 import com.video.newqu.R;
 import com.video.newqu.VideoApplication;
 import com.video.newqu.adapter.MessageListAdapter;
@@ -160,13 +162,16 @@ public class HomeMessageFragment extends BaseMineFragment<MineMessageFragmentRec
                             String type = listBean.getType();
                             if(!TextUtils.isEmpty(type)){
                                 if(TextUtils.equals("1",type)){
+                                    MobclickAgent.onEvent(getActivity(), "msg_web");
                                     WebViewActivity.loadUrl(getActivity(),listBean.getUrl(),listBean.getAction());
                                 }else if(TextUtils.equals("2",type)){
+                                    MobclickAgent.onEvent(getActivity(), "msg_video");
                                     VideoDetailsActivity.start(getActivity(),listBean.getVideo_id(),listBean.getUser_id(),false);
                                 }else if(TextUtils.equals("-1",type)){
                                     if(!TextUtils.isEmpty(listBean.getAction())){
                                         //微信
                                         if(TextUtils.equals("weixin://",listBean.getAction())){
+                                            MobclickAgent.onEvent(getActivity(), "msg_weixin");
                                             Utils.copyString("新趣小视频");
                                             ToastUtils.shoCenterToast("已复制微信号");
                                             android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getActivity())
@@ -192,6 +197,7 @@ public class HomeMessageFragment extends BaseMineFragment<MineMessageFragmentRec
                                             return;
                                         //话题
                                         }else if(TextUtils.equals("com.xinqu.media.topic",listBean.getAction())){
+                                            MobclickAgent.onEvent(getActivity(), "msg_topic");
                                             Intent intent=new Intent(listBean.getAction());
                                             intent.putExtra(Constant.KEY_FRAGMENT_TYPE,Constant.KEY_FRAGMENT_TYPE_TOPIC_VIDEO_LISTT);
                                             intent.putExtra(Constant.KEY_TITLE,listBean.getUrl());
@@ -200,6 +206,7 @@ public class HomeMessageFragment extends BaseMineFragment<MineMessageFragmentRec
                                             return;
                                         //其他类型的
                                         }else {
+                                            MobclickAgent.onEvent(getActivity(), "msg_action");
                                             try {
                                                 Intent intent = new Intent(listBean.getAction());
                                                 startActivity(intent);

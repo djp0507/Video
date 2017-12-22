@@ -9,7 +9,7 @@ import com.video.newqu.util.SharedPreferencesUtil;
  */
 public class ConfigSet {
 
-    public static final boolean IS_DEBUG=true;
+    public static final boolean IS_DEBUG=false;
     private static final String TAG =ConfigSet.class.getSimpleName();
     public static final int SAVE_USER_LOOK_VIDEO_HISTORY_COUNT = 200;//配置用户观看视频记录的最大存储长度
     private static ConfigSet mConfigSet;
