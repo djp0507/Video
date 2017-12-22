@@ -160,7 +160,14 @@
         <activity
             android:name=".ui.activity.ContentFragmentActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="com.xinqu.media.topic"/>    <!-- 自定义的action-->
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT" /><!--必须加上这个，否则下面无法直接使用自定的action-->
+                <category android:name="xinqu.topic.category"/>
+            </intent-filter>
+        </activity>
         <!-- 搜索 -->
         <activity
             android:name=".ui.activity.SearchActivity"
@@ -185,14 +192,17 @@
         <activity
             android:name=".ui.activity.WebViewActivity"
             android:screenOrientation="portrait"/>
-
-        <!-- 视频准备上传 -->
-
         <!-- 本地视频列表 -->
         <activity
             android:name=".ui.activity.MediaLocationVideoListActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="com.xinqu.media.locationvideo"/>    <!-- 自定义的action-->
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT" /><!--必须加上这个，否则下面无法直接使用自定的action-->
+                <category android:name="xinqu.location.category" />
+            </intent-filter>
         </activity>
 
         <!--音乐选择列表-->
@@ -222,7 +232,14 @@
             android:name=".ui.activity.MediaRecordActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="com.xinqu.media.recoed"/>    <!-- 自定义的action-->
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT" /><!--必须加上这个，否则下面无法直接使用自定的action-->
+                <category android:name="xinqu.record.category"/>
+            </intent-filter>
+        </activity>
 
         <!-- 视频编辑 -->
         <activity
@@ -230,7 +247,6 @@
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateAlwaysHidden|adjustPan|stateHidden"/>
-
         <!-- 视频裁剪 -->
         <activity
             android:name=".ui.activity.MediaVideoCatActivity"

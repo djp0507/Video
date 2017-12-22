@@ -110,6 +110,15 @@ public class MineUserInfo implements Serializable {
             private String status;
             private String username;
             private String video_count;
+            private int msgCount;
+
+            public int getMsgCount() {
+                return msgCount;
+            }
+
+            public void setMsgCount(int msgCount) {
+                this.msgCount = msgCount;
+            }
 
             public String getCity() {
                 return city;

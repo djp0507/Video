@@ -12,7 +12,6 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.Log;
 import android.view.View;
-
 import com.kk.securityhttp.domain.GoagalInfo;
 import com.umeng.socialize.UMAuthListener;
 import com.umeng.socialize.UMShareAPI;
@@ -35,11 +34,8 @@ import com.video.newqu.ui.presenter.LoginPresenter;
 import com.video.newqu.util.CommonUtils;
 import com.video.newqu.util.Logger;
 import com.video.newqu.util.ToastUtils;
-
 import org.greenrobot.eventbus.EventBus;
-
 import java.util.Map;
-
 import cn.smssdk.EventHandler;
 import cn.smssdk.OnSendMessageHandler;
 import cn.smssdk.SMSSDK;
@@ -265,7 +261,8 @@ public class LoginGroupActivity extends BaseActivity<ActivityLoginGroupBinding> 
         //手机账号登录需要补全用户信息
         if(null!=VideoApplication.getInstance().getUserData()&&null!=data&&!TextUtils.isEmpty(VideoApplication.getInstance().getUserData().getId())){
             if(TextUtils.isEmpty(data.getGender())){
-                CompleteUserDataDialogFragment.getInstance(data,"补全资料",Constant.MODE_USER_COMPLETE).setOnDismissListener(new CompleteUserDataDialogFragment.OnDismissListener() {
+                CompleteUserDataDialogFragment fragment = CompleteUserDataDialogFragment.newInstance(data, "补全资料", Constant.MODE_USER_COMPLETE);
+                fragment.setOnDismissListener(new CompleteUserDataDialogFragment.OnDismissListener() {
                     @Override
                     public void onDismiss(boolean change) {
                         Logger.d(TAG,"onDisMiss");
@@ -274,7 +271,8 @@ public class LoginGroupActivity extends BaseActivity<ActivityLoginGroupBinding> 
                         setResult(Constant.INTENT_LOGIN_RESULTCODE,intent);
                         finish();
                     }
-                }).show(getSupportFragmentManager(),"complete");
+                });
+                fragment.show(getSupportFragmentManager(),"complete");
                 return;
             }else{
                 Intent intent=new Intent();

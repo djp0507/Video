@@ -34,6 +34,7 @@ import com.video.newqu.listener.TopicClickListener;
 import com.video.newqu.ui.activity.AuthorDetailsActivity;
 import com.video.newqu.ui.activity.ContentFragmentActivity;
 import com.video.newqu.ui.activity.VerticalHistoryVideoPlayActivity;
+import com.video.newqu.ui.activity.VerticalVideoPlayActivity;
 import com.video.newqu.ui.contract.VideoDetailsContract;
 import com.video.newqu.ui.fragment.VerticalVideoPlayCommendFragment;
 import com.video.newqu.ui.presenter.VideoDetailsPresenter;
@@ -525,19 +526,30 @@ public class VerticalHistoryVidepPlayViewPager extends BasePager<PagerVideoPlaye
             return;
         }
 
+        //已经登录
         if(null!=VideoApplication.getInstance().getUserData()){
             if(null!=mVideoBean){
-                if(null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isPriseVideo()){
-                    if(showDialog) {
+                //点击的按钮
+                if(showDialog){
+                    if(null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isPriseVideo()){
                         if(null!=mContext&&!mContext.isFinishing()){
                             if(mContext instanceof VerticalHistoryVideoPlayActivity){
                                 ((VerticalHistoryVideoPlayActivity) mContext).showProgressDialog(1==mVideoBean.getIs_interest()?"取消点赞中..":"点赞中..",true);
                             }
                         }
+                        mVideoDetailsPresenter.onPriseVideo(mVideoBean.getVideoId(),VideoApplication.getLoginUserID());
                     }
-                    mVideoDetailsPresenter.onPriseVideo(mVideoBean.getVideoId(),VideoApplication.getLoginUserID());
+                    //双击的屏幕
+                }else{
+                    bindingView.reVideoGroup.startPriceAnimation();
+                    if(mVideoBean.getIs_interest()!=1){
+                        if(null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isPriseVideo()){
+                            mVideoDetailsPresenter.onPriseVideo(mVideoBean.getVideoId(),VideoApplication.getLoginUserID());
+                        }
+                    }
                 }
             }
+            //未登录
         }else{
             if(null!=mContext&&!mContext.isFinishing()){
                 ToastUtils.shoCenterToast("点赞需要登录账户");

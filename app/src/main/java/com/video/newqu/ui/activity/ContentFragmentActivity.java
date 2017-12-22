@@ -88,7 +88,6 @@ public class ContentFragmentActivity extends BaseActivity<ActivityContentFragmen
                 break;
             //分类下列表
             case Constant.KEY_FRAGMENT_TYPE_MUSIC_CATEGORY_LIST:
-//                initLayoutParams();
                 replaceFragment(R.id.frame_layout, MediaMusicCategroyListFragment.newInstance(getIntent().getStringExtra(Constant.MEDIA_KEY_MUSIC_CATEGORY_ID)));
                 break;
             //反馈

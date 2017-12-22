@@ -29,7 +29,6 @@ import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.ksyun.media.shortvideo.utils.AuthInfoManager;
 import com.tbruyelle.rxpermissions.RxPermissions;
 import com.video.newqu.R;
 import com.video.newqu.VideoApplication;
@@ -45,7 +44,6 @@ import com.video.newqu.contants.ApplicationManager;
 import com.video.newqu.contants.Constant;
 import com.video.newqu.databinding.FragmentMineBinding;
 import com.video.newqu.event.MessageEvent;
-import com.video.newqu.manager.ThreadManager;
 import com.video.newqu.ui.activity.AuthorDetailsActivity;
 import com.video.newqu.ui.activity.ClipImageActivity;
 import com.video.newqu.ui.activity.MainActivity;
@@ -57,13 +55,12 @@ import com.video.newqu.util.AndroidNFileUtils;
 import com.video.newqu.util.AnimationUtil;
 import com.video.newqu.util.CommonUtils;
 import com.video.newqu.util.FileUtils;
-import com.video.newqu.util.KSYAuthorPermissionsUtil;
 import com.video.newqu.util.Logger;
 import com.video.newqu.util.ScreenUtils;
+import com.video.newqu.util.SharedPreferencesUtil;
 import com.video.newqu.util.SystemUtils;
 import com.video.newqu.util.ToastUtils;
 import com.video.newqu.view.widget.GlideCircleTransform;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -71,12 +68,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
-
 import me.leolin.shortcutbadger.ShortcutBadger;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
@@ -100,7 +95,6 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
     private boolean isUpdata=true;//默认是否需要刷新
     private int mImageBgHeight;
     private final static int PERMISSION_REQUEST_CAMERA = 1;//摄像
-    private boolean isNewMsgEcho=true;//是否回显消息
 
     @Override
     public void onAttach(Context context) {
@@ -128,7 +122,6 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
             if(null!=mMainActivity){
                 mMainActivity.showMineRefreshTips();
             }
-            checkedMsgCount();
         }else{
             isUpdata=false;
         }
@@ -174,14 +167,16 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
                                 canelUserData();
                                 return;
                             }
-                            CompleteUserDataDialogFragment.getInstance(mUserInfo,"修改个人信息",Constant.MODE_USER_EDIT).setOnDismissListener(new CompleteUserDataDialogFragment.OnDismissListener() {
+                            CompleteUserDataDialogFragment fragment = CompleteUserDataDialogFragment.newInstance(mUserInfo, "修改个人信息", Constant.MODE_USER_EDIT);
+                            fragment.setOnDismissListener(new CompleteUserDataDialogFragment.OnDismissListener() {
                                 @Override
                                 public void onDismiss(boolean change) {
                                     if(change){
                                         updataViewUI();
                                     }
                                 }
-                            }).show(getChildFragmentManager(),"edit");
+                            });
+                            fragment.show(getChildFragmentManager(),"edit");
                         }
                         break;
                     //点击了更多，查看用户信息
@@ -316,7 +311,6 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
                     }
                 }
             },200);
-//            SharedPreferencesUtil.getInstance().putInt(Constant.TIPS_MINE_LOGIN_CODE,1);
         }
         if(isUpdata&&null!=VideoApplication.getInstance().getUserData()&&null!=bindingView&&null!=mMenuAdapter){
             if(null!=mUserInfoPresenter&&!mUserInfoPresenter.isLoading()){
@@ -330,7 +324,6 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
     public void onResume() {
         super.onResume();
         checkedMsgCount();
-        isNewMsgEcho=false;
     }
 
     /**
@@ -374,7 +367,7 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
         if(null==mMineTabInfos) mMineTabInfos=new ArrayList<>();
         mMineTabInfos.add(new MineTabInfo(getResources().getString(R.string.mine_fragment_works_title),0, true));
         mMineTabInfos.add(new MineTabInfo(getResources().getString(R.string.mine_fragment_like_title),0, false));
-        mMineTabInfos.add(new MineTabInfo(getResources().getString(R.string.mine_fragment_message_title),0, false));
+        mMineTabInfos.add(new MineTabInfo(getResources().getString(R.string.mine_fragment_message_title),null==mUserInfo?0:mUserInfo.getMsgCount(), false));
         bindingView.tabGridView.setNumColumns(3);
         mMenuAdapter = new MineMenuAdapter(getActivity(), mMineTabInfos);
         bindingView.tabGridView.setAdapter(mMenuAdapter);
@@ -437,6 +430,9 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
      */
     private void updataTabAdapter() {
         if(null!=mMenuAdapter){
+            for (MineTabInfo mMineTabInfo : mMineTabInfos) {
+                Logger.d(TAG,"mMineTabInfo---TitleName="+mMineTabInfo.getTitleName()+",AboutCount="+mMineTabInfo.getAboutCount());
+            }
             mMenuAdapter.setNewData(mMineTabInfos);
             mMenuAdapter.notifyDataSetChanged();
         }
@@ -496,7 +492,7 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
                 if(null!=mMineTabInfos&&mMineTabInfos.size()>0){
                     mMineTabInfos.get(0).setAboutCount(Integer.parseInt(TextUtils.isEmpty(mUserInfo.getVideo_count())?"0":mUserInfo.getVideo_count()));
                     mMineTabInfos.get(1).setAboutCount(Integer.parseInt(TextUtils.isEmpty(mUserInfo.getCollect_times())?"0":mUserInfo.getCollect_times()));
-//                mMineTabInfos.get(2).setAboutCount(0); 交给消息界面来设置数据
+                    mMineTabInfos.get(2).setAboutCount(mUserInfo.getMsgCount());
                 }
                 updataTabAdapter();//刷新标题栏
 
@@ -522,7 +518,6 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
         if(null!=mMineTabInfos&&mMineTabInfos.size()>0){
             mMineTabInfos.get(0).setAboutCount(0);
             mMineTabInfos.get(1).setAboutCount(0);
-            mMineTabInfos.get(2).setAboutCount(0);
         }
         updataTabAdapter();//刷新标题栏
         mUserInfo=null;//个人信息信息的所有数据
@@ -632,8 +627,12 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
      */
     public void updataTab(int count) {
         if(null!=mMineTabInfos&&mMineTabInfos.size()>0){
+            Logger.d(TAG,"mMineTabInfos="+mMineTabInfos.size());
             mMineTabInfos.get(2).setAboutCount(count);
             updataTabAdapter();
+        }
+        if(null!=mUserInfo){
+            mUserInfo.setMsgCount(count);
         }
     }
 
@@ -794,6 +793,7 @@ public class MineFragment extends BaseFragment<FragmentMineBinding> implements U
         hideFreshLodingView();
         isUpdata=false;
         mUserInfo = data.getData().getInfo();
+        mUserInfo.setMsgCount(SharedPreferencesUtil.getInstance().getInt(Constant.KEY_MSG_COUNT));
         ApplicationManager.getInstance().getCacheExample().remove(Constant.CACHE_MINE_USER_DATA);
         ApplicationManager.getInstance().getCacheExample().put(Constant.CACHE_MINE_USER_DATA,mUserInfo);//这个存储期限应该是无限期的
         initUserData();

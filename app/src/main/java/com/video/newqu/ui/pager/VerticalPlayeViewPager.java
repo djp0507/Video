@@ -557,7 +557,7 @@ public class VerticalPlayeViewPager extends BasePager<VerticalPagerVideoPlayLayo
                 danmaku.priority = 2;  // 一定会显示, 一般用于本机发送的弹幕
                 danmaku.isLive = true;
                 danmaku.setTime(bindingView.svDanmaku.getCurrentTime());//立即显示
-                danmaku.textSize = 19f * (mParser.getDisplayer().getDensity() - 0.6f); //文本弹幕字体大小
+                danmaku.textSize = 21f * (mParser.getDisplayer().getDensity() - 0.6f); //文本弹幕字体大小
                 danmaku.textColor = CommonUtils.getColor(R.color.record_text_color); //文本的颜色
                 bindingView.svDanmaku.addDanmaku(danmaku);//调用这个方法，添加字幕到控件，开始滚动
             } catch (UnsupportedEncodingException e) {
@@ -588,7 +588,7 @@ public class VerticalPlayeViewPager extends BasePager<VerticalPagerVideoPlayLayo
         danmaku.priority = 1;  // 可能会被各种过滤器过滤并隐藏显示
         danmaku.isLive = islive;
         danmaku.setTime(bindingView.svDanmaku.getCurrentTime() + 1200);//所长时间后加入弹幕组合
-        danmaku.textSize = 17f * (mParser.getDisplayer().getDensity() - 0.6f); //文本弹幕字体大小
+        danmaku.textSize = 19f * (mParser.getDisplayer().getDensity() - 0.6f); //文本弹幕字体大小
         danmaku.textColor = Color.WHITE; //文本的颜色
         danmaku.textShadowColor = CommonUtils.getColor(R.color.translucent_22); //文本弹幕描边的颜色
 //        danmaku.underlineColor = Color.DKGRAY; //文本弹幕下划线的颜色
@@ -794,11 +794,10 @@ public class VerticalPlayeViewPager extends BasePager<VerticalPagerVideoPlayLayo
             if(null!=mVideoBean){
                 if(mFragmentType==Constant.FRAGMENT_TYPE_WORKS){
                     if(!TextUtils.equals("0",mVideoBean.getIs_private())){
-                        ToastUtils.showErrorToast(mContext,null,null,"私密视频无法收藏，请先更改隐私权限");
+                        showErrorToast(null,null,"私密视频无法收藏，请先更改隐私权限");
                         return;
                     }
                 }
-                bindingView.reVideoGroup.startPriceAnimation();
                 //点击的按钮
                 if(showDialog){
                     if(null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isPriseVideo()){
@@ -811,7 +810,8 @@ public class VerticalPlayeViewPager extends BasePager<VerticalPagerVideoPlayLayo
                     }
                 //双击的屏幕
                 }else{
-                    if(0==mVideoBean.getIs_interest()){
+                    bindingView.reVideoGroup.startPriceAnimation();
+                    if(mVideoBean.getIs_interest()!=1){
                         if(null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isPriseVideo()){
                             mVideoDetailsPresenter.onPriseVideo(mVideoBean.getVideo_id(),VideoApplication.getLoginUserID());
                         }

@@ -93,8 +93,6 @@ import java.util.List;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 
-import static android.R.attr.id;
-
 /**
  * TinyHung@outlook.com
  * 2017/5/25 9:26
@@ -221,14 +219,7 @@ public class VideoDetailsActivity extends BaseActivity<ActivityVideoDetailsBindi
         bindingView.btnPrice.setOnClickListener(new PerfectClickListener() {
             @Override
             protected void onNoDoubleClick(View v) {
-                //已经登录
-                if(null!=VideoApplication.getInstance().getUserData()){
-                    priceVideo(true);
-                    //未登录
-                }else{
-                    ToastUtils.shoCenterToast("点赞需要登录账户");
-                    login();
-                }
+                priceVideo(true);
             }
         });
 
@@ -814,19 +805,7 @@ public class VideoDetailsActivity extends BaseActivity<ActivityVideoDetailsBindi
         headerLsyoutBinding.reVideoGroup.setOnDoubleClickListener(new VideoGroupRelativeLayout.OnDoubleClickListener() {
             @Override
             public void onDoubleClick() {
-                //已经登录
-                if(null!=VideoApplication.getInstance().getUserData()){
-                    if(null!=headerLsyoutBinding&&null!=headerLsyoutBinding.reVideoGroup){
-                        headerLsyoutBinding.reVideoGroup.startPriceAnimation();
-                    }
-                    if(null!=mVideoInfo&&1!=mVideoInfo.getIs_interest()){
-                        priceVideo(false);
-                    }
-                    //未登录
-                }else{
-                    ToastUtils.shoCenterToast("点赞需要登录账户");
-                    login();
-                }
+                priceVideo(false);
             }
 
             @Override
@@ -996,7 +975,9 @@ public class VideoDetailsActivity extends BaseActivity<ActivityVideoDetailsBindi
             return;
         }
 
-        if(null!=mVideoInfo){
+        if(null==mVideoInfo) return;
+        //已经登录
+        if(null!=VideoApplication.getInstance().getUserData()){
             if(!TextUtils.equals("0",mVideoInfo.getIs_private())){
                 ToastUtils.showErrorToast(VideoDetailsActivity.this,null,null,"私密视频无法收藏，请先更改隐私权限");
                 return;
@@ -1012,10 +993,23 @@ public class VideoDetailsActivity extends BaseActivity<ActivityVideoDetailsBindi
                 ToastUtils.shoCenterToast(message);
                 return;
             }
-            if(null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isPriseVideo()){
-                if(showDialog) showProgressDialog(1==mVideoInfo.getIs_interest()?"取消点赞中..":"点赞中..",true);
-                mVideoDetailsPresenter.onPriseVideo(mVideoInfo.getVideo_id(),VideoApplication.getLoginUserID());
+            if(showDialog){
+                if(null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isPriseVideo()){
+                    showProgressDialog(1==mVideoInfo.getIs_interest()?"取消点赞中..":"点赞中..",true);
+                    mVideoDetailsPresenter.onPriseVideo(mVideoInfo.getVideo_id(),VideoApplication.getLoginUserID());
+                }
+            }else{
+                if(null!=headerLsyoutBinding&&null!=headerLsyoutBinding.reVideoGroup){
+                    headerLsyoutBinding.reVideoGroup.startPriceAnimation();
+                }
+                if(null!=mVideoDetailsPresenter&&!mVideoDetailsPresenter.isPriseVideo()){
+                    mVideoDetailsPresenter.onPriseVideo(mVideoInfo.getVideo_id(),VideoApplication.getLoginUserID());
+                }
             }
+        //未登录
+        }else{
+            ToastUtils.shoCenterToast("点赞需要登录账户");
+            login();
         }
     }
 

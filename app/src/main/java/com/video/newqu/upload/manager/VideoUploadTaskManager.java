@@ -376,6 +376,7 @@ public class VideoUploadTaskManager {
                         if(null!=ossTaskMap&&ossTaskMap.size()>0){
                             ossTaskMap.remove(mUploadInfo.getId());
                         }
+                        Logger.d(TAG,"mUploadInfoDownloadPermiss="+mUploadInfo.getDownloadPermiss());
                         //上传成功
                         mUploadInfo.setUploadProgress(100);
                         ApplicationManager.getInstance().getVideoUploadDB().deleteUploadVideoInfo(mUploadInfo);

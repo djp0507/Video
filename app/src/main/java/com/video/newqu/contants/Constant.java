@@ -140,6 +140,9 @@ public interface Constant {
 
     String CACHE_MEDIA_MUSIC_CATEGORY_LIST = "cache_media_music_category_list";
     String CACHE_MEDIA_RECORED_LIKE_MUSIC = "cache_media_recored_like_music";
+
+    String CACHE_HOME_MESSAGE_LIST = "cache_home_message_list";
+
     /**
      * Event事件
      */
@@ -297,7 +300,7 @@ public interface Constant {
     String KEY_TOPIC_ID="key_topic_id";
     String KEY_REFRESH = "key_refresh";
     String KEY_PAGE_SIZE = "key_page_size";
-
+    String KEY_MSG_COUNT = "key_msg_count";
 
     int FRAGMENT_TYPE_FOLLOW = 0x1;//关注列表
     int FRAGMENT_TYPE_HOT=0x2;//热门

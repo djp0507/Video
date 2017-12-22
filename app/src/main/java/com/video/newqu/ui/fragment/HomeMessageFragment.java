@@ -1,9 +1,13 @@
 package com.video.newqu.ui.fragment;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.text.TextUtils;
 import android.view.View;
@@ -12,8 +16,9 @@ import com.video.newqu.R;
 import com.video.newqu.VideoApplication;
 import com.video.newqu.adapter.MessageListAdapter;
 import com.video.newqu.base.BaseMineFragment;
-import com.video.newqu.bean.NotifactionMessageInfo;
+import com.video.newqu.bean.NetMessageInfo;
 import com.video.newqu.comadapter.BaseQuickAdapter;
+import com.video.newqu.contants.ApplicationManager;
 import com.video.newqu.contants.Constant;
 import com.video.newqu.databinding.MineAuthorRecylerviewEmptyLayoutBinding;
 import com.video.newqu.databinding.MineMessageFragmentRecylerBinding;
@@ -23,9 +28,13 @@ import com.video.newqu.ui.activity.VideoDetailsActivity;
 import com.video.newqu.ui.activity.WebViewActivity;
 import com.video.newqu.ui.contract.MessageContract;
 import com.video.newqu.ui.presenter.MessagePresenter;
+import com.video.newqu.util.SharedPreferencesUtil;
 import com.video.newqu.util.ToastUtils;
+import com.video.newqu.util.Utils;
 import com.video.newqu.view.refresh.SwipePullRefreshLayout;
-import java.lang.ref.WeakReference;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -36,20 +45,20 @@ import java.util.List;
 
 public class HomeMessageFragment extends BaseMineFragment<MineMessageFragmentRecylerBinding> implements BaseQuickAdapter.RequestLoadMoreListener , MessageContract.View {
 
+    private static final String TAG = HomeMessageFragment.class.getSimpleName();
     private MessageListAdapter mMessageListAdapter;
     private MainActivity mMainActivity;
-    private WeakReference<MessagePresenter> mPresenterWeakReference;
-    private int mPage=0;
-    private int mPageSize=10;
-
-
+    private MessagePresenter mMessagePresenter;
+    private boolean isRefresh=true;//是否需要刷新
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         showContentView();
-        initPresenter();
         initAdapter();
+        mMessagePresenter = new MessagePresenter(getActivity());
+        mMessagePresenter.attachView(this);
+        getMessageList();
     }
 
     @Override
@@ -57,7 +66,6 @@ public class HomeMessageFragment extends BaseMineFragment<MineMessageFragmentRec
         bindingView.swiperefreshLayout.setOnRefreshListener(new SwipePullRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                mPage=0;
                 getMessageList();
             }
         });
@@ -66,18 +74,12 @@ public class HomeMessageFragment extends BaseMineFragment<MineMessageFragmentRec
     @Override
     protected void onVisible() {
         super.onVisible();
-        if(null!=bindingView&&null!=mMessageListAdapter&&null==mMessageListAdapter.getData()||mMessageListAdapter.getData().size()<=0){
+        if(isRefresh&&null!=bindingView&&null!=mMessageListAdapter&&null!=mMessagePresenter&&!mMessagePresenter.isLoading()){
             bindingView.recyerView.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     bindingView.swiperefreshLayout.setRefreshing(true);
-                    if(null==mPresenterWeakReference||null==mPresenterWeakReference.get()){
-                        initPresenter();
-                    }
-                    if(null!=VideoApplication.getInstance().getUserData()&&!mPresenterWeakReference.get().isLoading()){
-                        mPage=0;
-                        getMessageList();
-                    }
+                    getMessageList();
                 }
             },200);
         }
@@ -112,9 +114,7 @@ public class HomeMessageFragment extends BaseMineFragment<MineMessageFragmentRec
 
     @Override
     public void onDestroy() {
-        if(null!=mPresenterWeakReference&&null!=mPresenterWeakReference.get()){
-            mPresenterWeakReference.get().detachView();
-        }
+        if(null!=mMessagePresenter) mMessagePresenter.detachView();
         super.onDestroy();
     }
 
@@ -122,15 +122,7 @@ public class HomeMessageFragment extends BaseMineFragment<MineMessageFragmentRec
     @Override
     protected void onRefresh() {
         super.onRefresh();
-        mPage=0;
         getMessageList();
-    }
-
-
-    private void initPresenter() {
-        MessagePresenter messagePresenter = new MessagePresenter(getActivity());
-        messagePresenter.attachView(this);
-        mPresenterWeakReference = new WeakReference<MessagePresenter>(messagePresenter);
     }
 
 
@@ -138,8 +130,19 @@ public class HomeMessageFragment extends BaseMineFragment<MineMessageFragmentRec
      * 初始化适配器
      */
     private void initAdapter() {
+        List<NetMessageInfo.DataBean.ListBean> list= (List<NetMessageInfo.DataBean.ListBean>) ApplicationManager.getInstance().getCacheExample().getAsObject(Constant.CACHE_HOME_MESSAGE_LIST);//读取缓存
+        if(null!=list&&list.size()>0){
+            Collections.sort(list, new Comparator<NetMessageInfo.DataBean.ListBean>() {
+                @Override
+                public int compare(NetMessageInfo.DataBean.ListBean o1, NetMessageInfo.DataBean.ListBean o2) {
+                    Long addTimeO2 = Long.parseLong(o2.getAdd_time());
+                    Long addTimeO1 = Long.parseLong(o1.getAdd_time());
+                    return addTimeO2.compareTo(addTimeO1);
+                }
+            });
+        }
         bindingView.recyerView.setLayoutManager( new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
-        mMessageListAdapter = new MessageListAdapter(null);
+        mMessageListAdapter = new MessageListAdapter(list);
         bindingView.recyerView.setAdapter(mMessageListAdapter);
         MineAuthorRecylerviewEmptyLayoutBinding emptybindView = DataBindingUtil.inflate(getActivity().getLayoutInflater(), R.layout.mine_author_recylerview_empty_layout, (ViewGroup) bindingView.recyerView.getParent(), false);
         mMessageListAdapter.setEmptyView(emptybindView.getRoot());
@@ -150,30 +153,63 @@ public class HomeMessageFragment extends BaseMineFragment<MineMessageFragmentRec
             @Override
             public void onItemClick(int poistion) {
                 if(null!=mMessageListAdapter){
-                    List<NotifactionMessageInfo> data = mMessageListAdapter.getData();
+                    List<NetMessageInfo.DataBean.ListBean> data = mMessageListAdapter.getData();
                     if(null!=data&&mMessageListAdapter.getData().size()>0){
-                        NotifactionMessageInfo messageInfo = data.get(poistion);
-                        if(null!=messageInfo){
-                            switch (messageInfo.getItemType()) {
-                                //视频
-                                case 0:
-                                    String video_id = messageInfo.getVideo_id();
-                                    if(!TextUtils.isEmpty(video_id)){
-                                        VideoDetailsActivity.start(getActivity(),video_id,messageInfo.getUser_id(),false);
+                        final NetMessageInfo.DataBean.ListBean listBean = data.get(poistion);
+                        if(null!=listBean&&null!=listBean.getType()){
+                            String type = listBean.getType();
+                            if(!TextUtils.isEmpty(type)){
+                                if(TextUtils.equals("1",type)){
+                                    WebViewActivity.loadUrl(getActivity(),listBean.getUrl(),listBean.getAction());
+                                }else if(TextUtils.equals("2",type)){
+                                    VideoDetailsActivity.start(getActivity(),listBean.getVideo_id(),listBean.getUser_id(),false);
+                                }else if(TextUtils.equals("-1",type)){
+                                    if(!TextUtils.isEmpty(listBean.getAction())){
+                                        //微信
+                                        if(TextUtils.equals("weixin://",listBean.getAction())){
+                                            Utils.copyString("新趣小视频");
+                                            ToastUtils.shoCenterToast("已复制微信号");
+                                            android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getActivity())
+                                                    .setTitle("新趣小视频")
+                                                    .setMessage(getResources().getString(R.string.open_weixin_tips));
+                                            builder.setNegativeButton("算了", null);
+                                            builder.setPositiveButton("是", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    dialog.dismiss();
+                                                    try {
+                                                        Uri uri = Uri.parse(listBean.getAction());
+                                                        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                                                        startActivity(intent);
+                                                    } catch (Exception e) {
+                                                        //若无法正常跳转，在此进行错误处理
+                                                        ToastUtils.shoCenterToast("无法跳转到微信，请检查设备是否安装了微信！");
+                                                    }
+                                                }
+                                            });
+                                            builder.setCancelable(false);
+                                            builder.show();
+                                            return;
+                                        //话题
+                                        }else if(TextUtils.equals("com.xinqu.media.topic",listBean.getAction())){
+                                            Intent intent=new Intent(listBean.getAction());
+                                            intent.putExtra(Constant.KEY_FRAGMENT_TYPE,Constant.KEY_FRAGMENT_TYPE_TOPIC_VIDEO_LISTT);
+                                            intent.putExtra(Constant.KEY_TITLE,listBean.getUrl());
+                                            intent.putExtra(Constant.KEY_VIDEO_TOPIC_ID,listBean.getUrl());
+                                            startActivity(intent);
+                                            return;
+                                        //其他类型的
+                                        }else {
+                                            try {
+                                                Intent intent = new Intent(listBean.getAction());
+                                                startActivity(intent);
+                                            } catch (Exception e) {
+                                                //若无法正常跳转，在此进行错误处理
+                                                ToastUtils.shoCenterToast("处理失败："+e.getMessage());
+                                            }
+                                        }
                                     }
-                                    break;
-                                //网页
-                                case 1:
-                                    if(null!=messageInfo.getWebUrl()){
-                                        WebViewActivity.loadUrl(getActivity(),messageInfo.getWebUrl(),"百度图片");
-                                    }
-                                    break;
-                                //其他（暂时测试话题）
-                                case 2:
-                                    if(null!=messageInfo.getTopic()){
-                                        startTargetActivity(Constant.KEY_FRAGMENT_TYPE_TOPIC_VIDEO_LISTT,messageInfo.getTopic(),VideoApplication.getLoginUserID(),0,messageInfo.getTopic());
-                                    }
-                                    break;
+                                }
                             }
                         }
                     }
@@ -188,42 +224,46 @@ public class HomeMessageFragment extends BaseMineFragment<MineMessageFragmentRec
             }
 
             @Override
-            public void onOthorClick(String topic) {
-                if(null!=topic){
-                    startTargetActivity(Constant.KEY_FRAGMENT_TYPE_TOPIC_VIDEO_LISTT,topic,VideoApplication.getLoginUserID(),0,topic);
+            public void onOthorClick(String action) {
+                if(null!=action){
+                    ToastUtils.shoCenterToast(action);
                 }
             }
         });
     }
 
-
     @Override
     public void onLoadMoreRequested() {
         if(null!=mMessageListAdapter){
-            mMessageListAdapter.setEnableLoadMore(true);
-            getMessageList();
+            bindingView.recyerView.post(new Runnable() {
+                @Override
+                public void run() {
+                    mMessageListAdapter.loadMoreEnd();//没有更多的数据了
+                }
+            });
         }
     }
-
-
 
     /**
      * 第一次加载和加载更多
      */
     private void getMessageList() {
-        if(null==mPresenterWeakReference||null==mPresenterWeakReference.get()){
-            initPresenter();
-        }
-        if(null!=VideoApplication.getInstance().getUserData()&&!mPresenterWeakReference.get().isLoading()){
-            mPage++;
-            mPresenterWeakReference.get().getMessageList(VideoApplication.getLoginUserID(),mPage+"",mPageSize+"");
+        if(null!=mMessagePresenter&&!mMessagePresenter.isLoading()){
+            mMessagePresenter.getMessageList();
         }
     }
 
-
     @Override
-    public void showMessageInfo(List<NotifactionMessageInfo> data) {
+    public void showMessageInfo(List<NetMessageInfo.DataBean.ListBean> data) {
+        isRefresh=false;
         bindingView.swiperefreshLayout.setRefreshing(false);
+        Fragment parentFragment = getParentFragment();
+        if(null!=parentFragment&&parentFragment instanceof MineFragment){
+            ((MineFragment) parentFragment).updataTab(data.size());
+        }
+        SharedPreferencesUtil.getInstance().putInt(Constant.KEY_MSG_COUNT,data.size());
+        ApplicationManager.getInstance().getCacheExample().remove(Constant.CACHE_HOME_MESSAGE_LIST);
+        ApplicationManager.getInstance().getCacheExample().put(Constant.CACHE_HOME_MESSAGE_LIST, (Serializable) data,Constant.CACHE_TIME);
         if(null!= mMessageListAdapter){
             bindingView.recyerView.post(new Runnable() {
                 @Override
@@ -231,17 +271,22 @@ public class HomeMessageFragment extends BaseMineFragment<MineMessageFragmentRec
                     mMessageListAdapter.loadMoreComplete();//加载完成
                 }
             });
-            if(1==mPage){
-                mMessageListAdapter.setNewData(data);
-            }else{
-                mMessageListAdapter.addData(data);
-            }
+            Collections.sort(data, new Comparator<NetMessageInfo.DataBean.ListBean>() {
+                @Override
+                public int compare(NetMessageInfo.DataBean.ListBean o1, NetMessageInfo.DataBean.ListBean o2) {
+                    Long addTimeO2 = Long.parseLong(o2.getAdd_time());
+                    Long addTimeO1 = Long.parseLong(o1.getAdd_time());
+                    return addTimeO2.compareTo(addTimeO1);
+                }
+            });
+            mMessageListAdapter.setNewData(data);
         }
     }
 
     @Override
-    public void getMessageError(String data) {
-        if(1==mPage&&null==mMessageListAdapter.getData()||mMessageListAdapter.getData().size()<=0){
+    public void showMessageError(String data) {
+        isRefresh=false;
+        if(null==mMessageListAdapter.getData()||mMessageListAdapter.getData().size()<=0){
             showLoadingErrorView();
         }
         bindingView.swiperefreshLayout.setRefreshing(false);
@@ -253,31 +298,11 @@ public class HomeMessageFragment extends BaseMineFragment<MineMessageFragmentRec
                 }
             });
         }
-        if(mPage>0){
-            mPage--;
-        }
-    }
-
-
-    @Override
-    public void getMessageEmpty(String data) {
-        bindingView.swiperefreshLayout.setRefreshing(false);
-        if (null != mMessageListAdapter) {
-            bindingView.recyerView.post(new Runnable() {
-                @Override
-                public void run() {
-                    mMessageListAdapter.loadMoreEnd();//没有更多的数据了
-                }
-            });
-        }
-        if(mPage>0){
-            mPage--;
-        }
     }
 
     @Override
     public void showErrorView() {
-
+        isRefresh=false;
     }
 
     @Override
@@ -304,13 +329,18 @@ public class HomeMessageFragment extends BaseMineFragment<MineMessageFragmentRec
             }
             return;
         }
-        if(null==mPresenterWeakReference||null==mPresenterWeakReference.get()){
-            initPresenter();
-        }
         if(null!= mMessageListAdapter){
-            if(!mPresenterWeakReference.get().isLoading()){
+            if(null!=mMessagePresenter&&!mMessagePresenter.isLoading()){
+                List<NetMessageInfo.DataBean.ListBean> data = mMessageListAdapter.getData();
+                if(null!=data&&data.size()>0){
+                    bindingView.recyerView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            bindingView.recyerView.scrollToPosition(0);
+                        }
+                    });
+                }
                 bindingView.swiperefreshLayout.setRefreshing(true);
-                mPage=0;
                 getMessageList();
             }else{
                 showErrorToast(null,null,"刷新太频繁了");

@@ -37,16 +37,24 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_centerVertical="true"
-                            android:paddingTop="20dp"
+                            android:paddingTop="40dp"
                             android:orientation="vertical">
                             <ImageView
                                 android:id="@+id/iv_icon"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center_horizontal"
-                                android:src="@drawable/jpush_notification_icon"
-                                android:scaleType="centerCrop"
-                                />
+                                android:src="@drawable/xinqu_code"
+                                android:scaleType="centerCrop"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="13sp"
+                                android:textColor="@color/white"
+                                android:padding="5dp"
+                                android:layout_gravity="center_horizontal"
+                                android:text="点击复制微信号"/>
+
                             <TextView
                                 android:id="@+id/tv_verstion"
                                 android:layout_width="wrap_content"
@@ -54,17 +62,17 @@
                                 android:textSize="15sp"
                                 android:textColor="@color/white"
                                 android:layout_gravity="center_horizontal"
-                                android:layout_marginTop="30dp"
+                                android:layout_marginTop="6dp"
                                 android:text="当前版本：V1.2.6"/>
                             <TextView
                                 android:id="@+id/bt_checked_upload"
                                 android:layout_width="wrap_content"
                                 android:paddingLeft="50dp"
                                 android:paddingRight="50dp"
-                                android:layout_height="40dp"
+                                android:layout_height="36dp"
+                                android:layout_marginTop="15dp"
                                 android:background="@drawable/bt_transpent_selector"
                                 android:layout_gravity="center_horizontal"
-                                android:layout_margin="12dp"
                                 android:gravity="center"
                                 android:textSize="16sp"
                                 android:textColor="@color/text_app_style_unwhite_selector"
@@ -90,97 +98,6 @@
                     </RelativeLayout>
                 </LinearLayout>
             </com.video.newqu.view.widget.ZoomScrollView>
-
-
-            <!--<RelativeLayout-->
-            <!--android:id="@+id/follow_weichact"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:background="@drawable/item_press_bg"-->
-            <!--android:padding="12dp">-->
-            <!--<TextView-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:textColor="@color/common_h1"-->
-            <!--android:textSize="16sp"-->
-            <!--android:text="关注新趣官方微信"/>-->
-            <!--<TextView-->
-            <!--android:id="@+id/tv_copy_weichact"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_alignParentRight="true"-->
-            <!--android:layout_centerVertical="true"-->
-            <!--android:textSize="10sp"-->
-            <!--android:textColor="@color/text_app_style_selector"-->
-            <!--android:paddingRight="10dp"-->
-            <!--android:paddingLeft="10dp"-->
-            <!--android:paddingTop="5dp"-->
-            <!--android:paddingBottom="5dp"-->
-            <!--android:background="@drawable/bg_appstyle_round_radius_selector"-->
-            <!--android:text="复制"/>-->
-            <!--</RelativeLayout>-->
-
-            <!--<View-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="0.5dp"-->
-            <!--android:background="@color/erwuwuliu"-->
-            <!--android:layout_marginRight="12dp"-->
-            <!--android:layout_marginLeft="12dp"/>-->
-
-            <!--<RelativeLayout-->
-            <!--android:id="@+id/follow_weibo"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:background="@drawable/item_press_bg"-->
-            <!--android:padding="12dp">-->
-            <!--<TextView-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:textColor="@color/common_h1"-->
-            <!--android:textSize="16sp"-->
-            <!--android:text="关注新趣官方微博"/>-->
-            <!--<TextView-->
-            <!--android:id="@+id/tv_copy_weibo"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_alignParentRight="true"-->
-            <!--android:layout_centerVertical="true"-->
-            <!--android:textSize="10sp"-->
-            <!--android:textColor="@color/text_app_style_selector"-->
-            <!--android:paddingRight="10dp"-->
-            <!--android:paddingLeft="10dp"-->
-            <!--android:paddingTop="5dp"-->
-            <!--android:paddingBottom="5dp"-->
-            <!--android:background="@drawable/bg_appstyle_round_radius_selector"-->
-            <!--android:text="复制"/>-->
-            <!--</RelativeLayout>-->
-            <!--<View-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="0.5dp"-->
-            <!--android:background="@color/erwuwuliu"-->
-            <!--android:layout_marginRight="12dp"-->
-            <!--android:layout_marginLeft="12dp"/>-->
-
-            <!--<RelativeLayout-->
-            <!--android:id="@+id/make_desp"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:background="@drawable/item_press_bg"-->
-            <!--android:padding="12dp">-->
-            <!--<TextView-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:textColor="@color/common_h1"-->
-            <!--android:textSize="16sp"-->
-            <!--android:text="使用攻略"/>-->
-            <!--<ImageView-->
-            <!--android:layout_width="18dp"-->
-            <!--android:layout_height="18dp"-->
-            <!--android:layout_alignParentRight="true"-->
-            <!--android:layout_centerVertical="true"-->
-            <!--android:src="@drawable/iv_more"-->
-            <!--/>-->
-            <!--</RelativeLayout>-->
 
             <RelativeLayout xmlns:app="http://schemas.android.com/apk/res-auto"
                             android:id="@+id/rl_base_titlebar"
@@ -225,8 +142,8 @@
                             android:textColor="@color/white"
                             android:layout_centerVertical="true"
                             android:textSize="18sp"
-                            android:lines="1"
                             android:ellipsize="marquee"
+                            android:singleLine="true"
                             android:visibility="visible"
                             android:text="关于"/>
                     </RelativeLayout>

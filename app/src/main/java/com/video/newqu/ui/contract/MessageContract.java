@@ -2,8 +2,7 @@
 package com.video.newqu.ui.contract;
 
 import com.video.newqu.base.BaseContract;
-import com.video.newqu.bean.MessageInfo;
-import com.video.newqu.bean.NotifactionMessageInfo;
+import com.video.newqu.bean.NetMessageInfo;
 
 import java.util.List;
 
@@ -15,12 +14,11 @@ import java.util.List;
 public interface MessageContract {
 
     interface View extends BaseContract.BaseView {
-        void showMessageInfo(List<NotifactionMessageInfo> data);
-        void getMessageError(String data);
-        void getMessageEmpty(String data);
+        void showMessageInfo(List<NetMessageInfo.DataBean.ListBean> data);
+        void showMessageError(String data);
     }
 
     interface Presenter<T> extends BaseContract.BasePresenter<T> {
-        void getMessageList(String userID, String page, String pageSize);
+        void getMessageList();
     }
 }

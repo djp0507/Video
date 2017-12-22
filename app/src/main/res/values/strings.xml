@@ -160,4 +160,5 @@
     <string name="detele_video_tips">确定要删除此视频吗？删除后将不可恢复!</string>
     <string name="set_peivate_video_tips">将视频设置为私密状态后其他用户将无法观看到你的这部作品，确定要这样做吗？</string>
     <string name="not_wifi_play_video_tips">您当前未连接WIFI网络，使用流量播放可能会消耗一定流量，（播放过的视频且缓存未删除再次播放无需消耗流量） 是否继续播放？</string>
+    <string name="open_weixin_tips">已复制微信号，打开微信-右上角加号-添加朋友-公众号-长按粘贴-搜索并关注公众号，是否立即前往关注？</string>
 </resources>

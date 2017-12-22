@@ -73,7 +73,6 @@ public class CompleteUserDataDialogFragment extends BaseDialogFragment<FragmentD
     private UserEditPresenter mUserEditPresenter;
     private Animation mLoadAnimation;
     private File mFilePath=null;
-    private static CompleteUserDataDialogFragment mInstance;
     private String mTitle="补全用户资料";
     private int mAction_mode;
     private boolean change=false;
@@ -88,18 +87,14 @@ public class CompleteUserDataDialogFragment extends BaseDialogFragment<FragmentD
         return R.layout.fragment_dialog_complete_userdata;
     }
 
-    public synchronized static CompleteUserDataDialogFragment getInstance(MineUserInfo.DataBean.InfoBean data,String title,int actionMode){
-        synchronized(CompleteUserDataDialogFragment.class){
-            if(null== mInstance){
-                mInstance = new CompleteUserDataDialogFragment();
-                Bundle bundle=new Bundle();
-                bundle.putSerializable("user_data",data);
-                bundle.putString("title",title);
-                bundle.putInt("action_mode",actionMode);
-                mInstance.setArguments(bundle);
-            }
-        }
-        return mInstance;
+    public  static CompleteUserDataDialogFragment newInstance(MineUserInfo.DataBean.InfoBean data,String title,int actionMode){
+        CompleteUserDataDialogFragment fragment = new CompleteUserDataDialogFragment();
+        Bundle bundle=new Bundle();
+        bundle.putSerializable("user_data",data);
+        bundle.putString("title",title);
+        bundle.putInt("action_mode",actionMode);
+        fragment.setArguments(bundle);
+        return fragment;
     }
 
     @Override
@@ -231,8 +226,8 @@ public class CompleteUserDataDialogFragment extends BaseDialogFragment<FragmentD
                 .load(mUserData.getLogo())
                 .error(R.drawable.iv_mine)
                 .animate(R.anim.item_alpha_in)//加载中动画
-                .diskCacheStrategy(DiskCacheStrategy.ALL)//缓存源资源和转换后的资源
                 .centerCrop()//中心点缩放
+                .diskCacheStrategy(DiskCacheStrategy.ALL)//缓存源资源和转换后的资源
                 .skipMemoryCache(true)//跳过内存缓存
                 .transform(new GlideCircleTransform(getActivity()))
                 .into(bindingView.ivUserHead);
@@ -465,7 +460,6 @@ public class CompleteUserDataDialogFragment extends BaseDialogFragment<FragmentD
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(MessageEvent event) {
-        Logger.d(TAG,"onMessageEvent"+event.getRequestCode());
         if(null!=event&&TextUtils.equals("CAMERA_REQUEST",event.getMessage())){
             if(event.getResultState()== Activity.RESULT_CANCELED){
                 return;
@@ -612,7 +606,7 @@ public class CompleteUserDataDialogFragment extends BaseDialogFragment<FragmentD
     public void onDestroyView() {
         super.onDestroyView();
         EventBus.getDefault().unregister(this);
-        if(null!=mFilePath&&mFilePath.exists()&&mFilePath.isFile()){
+        if(null!=mFilePath&&mFilePath.exists()){
             FileUtils.deleteFile(mFilePath);
             mFilePath=null;
         }
@@ -625,9 +619,8 @@ public class CompleteUserDataDialogFragment extends BaseDialogFragment<FragmentD
      * @param onDismissListener
      * @return
      */
-    public CompleteUserDataDialogFragment setOnDismissListener(OnDismissListener onDismissListener) {
+    public void setOnDismissListener(OnDismissListener onDismissListener) {
         mOnDismissListener = onDismissListener;
-        return mInstance;
     }
 
 

@@ -21,6 +21,7 @@ import com.umeng.analytics.MobclickAgent;
 import com.video.newqu.R;
 import com.video.newqu.manager.StatusBarManager;
 import com.video.newqu.util.CommonUtils;
+import com.video.newqu.util.ToastUtils;
 import com.video.newqu.util.Utils;
 import com.video.newqu.webview.FullscreenHolder;
 import com.video.newqu.webview.IWebPageView;
@@ -60,7 +61,9 @@ public class WebViewActivity extends AppCompatActivity implements IWebPageView, 
         StatusBarManager.getInstance().init(this,  CommonUtils.getColor(R.color.white), 0,true);
         initViews();
         initWebView();
-        if(TextUtils.isEmpty(mUrl)){
+        if(TextUtils.isEmpty(mUrl)||!mUrl.startsWith("http")){
+            ToastUtils.shoCenterToast("网址错误！");
+            finish();
             return;
         }
         mWebView.loadUrl(mUrl);

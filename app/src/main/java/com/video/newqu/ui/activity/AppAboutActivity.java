@@ -1,11 +1,15 @@
 package com.video.newqu.ui.activity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
@@ -48,7 +52,7 @@ import rx.functions.Action1;
  * 关于App
  */
 
-public class AppAboutActivity extends BaseActivity<ActivityAboutBinding> implements View.OnClickListener {
+public class AppAboutActivity extends BaseActivity<ActivityAboutBinding> {
 
     private String mImageURL;
     private int slidingDistance;
@@ -73,8 +77,54 @@ public class AppAboutActivity extends BaseActivity<ActivityAboutBinding> impleme
     @Override
     public void initViews() {
         bindingView.tvVerstion.setText("当前版本："+ Utils.getVersion(AppAboutActivity.this));
-        bindingView.btCheckedUpload.setOnClickListener(this);
-        bindingView.ivBack.setOnClickListener(this);
+        View.OnClickListener onClickListener=new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (v.getId()) {
+                    //检查版本更新
+                    case R.id.bt_checked_upload:
+                        checkedUpRefreshAPK();
+                        break;
+                    case R.id.ivBack:
+                        onBackPressed();
+                        break;
+                    //点击了二维码头像
+                    case R.id.iv_icon:
+                        Utils.copyString("新趣小视频");
+                        ToastUtils.shoCenterToast("已复制微信号");
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(AppAboutActivity.this)
+                                        .setTitle("新趣小视频")
+                                        .setMessage("已复制微信号，打开微信-右上角加号-添加朋友-公众号-长按粘贴-搜索并关注公众号，是否立即前往关注？");
+                                builder.setNegativeButton("算了", null);
+                                builder.setPositiveButton("是", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                        try {
+                                            //利用Intent打开微信
+                                            Uri uri = Uri.parse("weixin://");
+                                            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                                            startActivity(intent);
+                                        } catch (Exception e) {
+                                            //若无法正常跳转，在此进行错误处理
+                                            ToastUtils.shoCenterToast("无法跳转到微信，请检查设备是否安装了微信！");
+                                        }
+                                    }
+                                });
+                                builder.setCancelable(false);
+                                builder.show();
+                            }
+                        },500);
+                        break;
+                }
+            }
+        };
+        bindingView.btCheckedUpload.setOnClickListener(onClickListener);
+        bindingView.ivBack.setOnClickListener(onClickListener);
+        bindingView.ivIcon.setOnClickListener(onClickListener);
         setToolBar();
     }
 
@@ -145,6 +195,7 @@ public class AppAboutActivity extends BaseActivity<ActivityAboutBinding> impleme
     /**
      * 显示popu内的图片
      */
+    @SuppressLint("RestrictedApi")
     @Override
     protected boolean onPrepareOptionsPanel(View view, Menu menu) {
         if (menu != null) {
@@ -285,19 +336,6 @@ public class AppAboutActivity extends BaseActivity<ActivityAboutBinding> impleme
                 return false;
             }
         }).into(bindingView.imgItemBg);
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            //检查版本更新
-            case R.id.bt_checked_upload:
-                checkedUpRefreshAPK();
-                break;
-            case R.id.ivBack:
-                onBackPressed();
-                break;
-        }
     }
 
 

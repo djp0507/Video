@@ -1,6 +1,5 @@
 package com.video.newqu.ui.activity;
 
-import android.Manifest;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.AsyncTask;
@@ -14,7 +13,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.RadioButton;
 import com.ksyun.media.shortvideo.utils.AuthInfoManager;
-import com.tbruyelle.rxpermissions.RxPermissions;
 import com.tencent.bugly.Bugly;
 import com.umeng.socialize.UMShareAPI;
 import com.umeng.socialize.bean.SHARE_MEDIA;
@@ -24,7 +22,6 @@ import com.video.newqu.VideoApplication;
 import com.video.newqu.adapter.XinQuFragmentPagerAdapter;
 import com.video.newqu.base.TopBaseActivity;
 import com.video.newqu.bean.ShareInfo;
-import com.video.newqu.bean.UpdataApkInfo;
 import com.video.newqu.bean.WeiChactVideoInfo;
 import com.video.newqu.bean.WeiXinVideo;
 import com.video.newqu.contants.ApplicationManager;
@@ -33,17 +30,13 @@ import com.video.newqu.contants.Constant;
 import com.video.newqu.contants.NetContants;
 import com.video.newqu.databinding.ActivityMainBinding;
 import com.video.newqu.event.MessageEvent;
-import com.video.newqu.listener.OnUpdataStateListener;
-import com.video.newqu.manager.APKUpdataManager;
 import com.video.newqu.manager.ActivityCollectorManager;
 import com.video.newqu.manager.DBScanWeiCacheManager;
 import com.video.newqu.manager.ThreadManager;
-import com.video.newqu.service.DownLoadService;
 import com.video.newqu.ui.contract.MainContract;
 import com.video.newqu.ui.dialog.ExitAppDialog;
 import com.video.newqu.ui.dialog.LocationVideoUploadDialog;
 import com.video.newqu.ui.dialog.TakePicturePopupWindow;
-import com.video.newqu.ui.dialog.BuildManagerDialog;
 import com.video.newqu.ui.fragment.HomeFragment;
 import com.video.newqu.ui.fragment.MineFragment;
 import com.video.newqu.ui.presenter.MainPresenter;
@@ -51,12 +44,10 @@ import com.video.newqu.upload.manager.BatchFileUploadManager;
 import com.video.newqu.util.DateParseUtil;
 import com.video.newqu.util.GradeUtil;
 import com.video.newqu.util.KSYAuthorPermissionsUtil;
-import com.video.newqu.util.Logger;
 import com.video.newqu.util.ScanWeixin;
 import com.video.newqu.util.ShareUtils;
 import com.video.newqu.util.SharedPreferencesUtil;
 import com.video.newqu.util.SystemUtils;
-import com.video.newqu.util.ToastUtils;
 import com.video.newqu.util.Utils;
 import com.video.newqu.util.VideoComposeProcessor;
 import org.greenrobot.eventbus.EventBus;
@@ -70,8 +61,6 @@ import java.util.Comparator;
 import java.util.List;
 import cn.jpush.android.api.JPushInterface;
 import me.leolin.shortcutbadger.ShortcutBadger;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
 
 /**
  * TinyHung@outlook.com
@@ -124,9 +113,6 @@ public class MainActivity extends TopBaseActivity implements MainContract.View {
             @Override
             public void onPageSelected(int position) {
                 mCureenViewIndex=position;
-                if(1==position){
-                    goneTabMessageCount();
-                }
             }
 
             @Override
@@ -420,6 +406,8 @@ public class MainActivity extends TopBaseActivity implements MainContract.View {
         if (VideoApplication.isUnLogin && null == VideoApplication.getInstance().getUserData()) {
             setLoginViewIsShow(true);
             upChildViewToPoistion(-1);
+            setMessageCount(0);
+            ShortcutBadger.removeCount(VideoApplication.getInstance().getApplicationContext());
             VideoApplication.isUnLogin = false;
         }
         //用户关注列表发生了变化
@@ -557,18 +545,6 @@ public class MainActivity extends TopBaseActivity implements MainContract.View {
 
     }
 
-
-    /**
-     * 隐藏个人中心的消息数量标记
-     */
-    private void goneTabMessageCount() {
-        if(bindingView.tvMenuMineMsgCount.getVisibility()==View.VISIBLE){
-            bindingView.tvMenuMineMsgCount.setText("");
-            bindingView.tvMenuMineMsgCount.setVisibility(View.GONE);
-        }
-    }
-
-
     /**
      * 结束APP
      */
@@ -674,6 +650,7 @@ public class MainActivity extends TopBaseActivity implements MainContract.View {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        UMShareAPI.get(this).onActivityResult(requestCode,resultCode,data);
         //这个时候DialogFragment无法回调onActivityResult方法.由父窗体来回调结果到子View中,发出订阅的事件，如果用户信息编辑的界面已经初始化可以收到订阅消息
         MessageEvent messageEvent=new MessageEvent();
         messageEvent.setData(data);
@@ -681,7 +658,6 @@ public class MainActivity extends TopBaseActivity implements MainContract.View {
         messageEvent.setRequestCode(requestCode);
         messageEvent.setResultState(resultCode);
         EventBus.getDefault().post(messageEvent);
-        UMShareAPI.get(this).onActivityResult(requestCode,resultCode,data);
         //登录意图，需进一步确认
         if (Constant.INTENT_LOGIN_EQUESTCODE == requestCode && resultCode == Constant.INTENT_LOGIN_RESULTCODE) {
             if (null != data) {

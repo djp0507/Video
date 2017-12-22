@@ -29,6 +29,7 @@ public class HotVideoPresenter extends RxPresenter<HotVideoContract.View> implem
     }
 
     private boolean isLoading;
+
     public HotVideoPresenter(Context context){
         this.context=context;
     }
@@ -48,11 +49,9 @@ public class HotVideoPresenter extends RxPresenter<HotVideoContract.View> implem
             @Override
             public void call(FollowVideoList data) {
                 isLoading=false;
-                if(null!=data&&null!=data.getData()&&data.getData().getLists().size()>0){
-                    for (FollowVideoList.DataBean.ListsBean listsBean : data.getData().getLists()) {
-                    }
+                if(null!=data&&null!=data.getData()&&null!=data.getData().getLists()&&data.getData().getLists().size()>0){
                     mView.showHotVideoList(data);
-                }else if(null!=data&&null!=data.getData()&&data.getData().getLists().size()<=0){
+                }else if(null!=data&&null!=data.getData()&&null!=data.getData().getLists()&&data.getData().getLists().size()<=0){
                     mView.showHotVideoListEmpty("没有更多数据了");
                 }else{
                     mView.showHotVideoListError("加载失败");

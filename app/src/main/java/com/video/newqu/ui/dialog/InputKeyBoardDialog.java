@@ -51,8 +51,6 @@ public class InputKeyBoardDialog extends Dialog {
     private TextView btnsubmit;
     private String mHintTtext="写评论...";
     private CharSequence content_temp;//监听前的文本
-    private int content_editStart;//光标开始位置
-    private int content_editEnd;//光标结束位置
     private String indexOutErrortex="评论内容超过字数限制";
 
 
@@ -151,14 +149,12 @@ public class InputKeyBoardDialog extends Dialog {
             public void afterTextChanged(Editable editable) {
                 if(null!=editable&&editable.length()>0){
                     if(null!=mInput_edit_text){
-                        content_editStart =mInput_edit_text.getSelectionStart();
-                        content_editEnd =mInput_edit_text.getSelectionEnd();
                         if (null!=content_temp&&content_temp.length() > content_charMaxNum) {
-                            ToastUtils.showSnackebarStateToast(getWindow().getDecorView(),null,null, R.drawable.snack_bar_error_white, Constant.SNACKBAR_ERROR,indexOutErrortex);
-//                            editable.delete(content_editStart, content_editEnd);
-//                            int tempSelection = content_editEnd;
-//                            mInput_edit_text.setText(editable);
-//                            mInput_edit_text.setSelection(tempSelection);
+                            //只保留最大长度范围内文字
+                            String substring = content_temp.toString().substring(0, content_charMaxNum - 1);
+                            mInput_edit_text.setText(substring);
+                            mInput_edit_text.setSelection(substring.length());
+                            ToastUtils.shoCenterToast(indexOutErrortex);
                         }
                     }
                 }
