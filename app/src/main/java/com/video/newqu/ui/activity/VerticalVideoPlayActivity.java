@@ -25,6 +25,7 @@ import com.video.newqu.contants.Constant;
 import com.video.newqu.databinding.ActivityVerticalVideoPlayBinding;
 import com.video.newqu.ui.fragment.VerticalAuthorDetailsFragment;
 import com.video.newqu.ui.fragment.VerticalVideoPlayFragment;
+import com.video.newqu.util.Logger;
 import com.video.newqu.util.SharedPreferencesUtil;
 import com.video.newqu.util.SystemUtils;
 import com.video.newqu.util.ToastUtils;
@@ -32,9 +33,6 @@ import com.video.newqu.util.Utils;
 import java.util.ArrayList;
 import java.util.List;
 import com.xinqu.videoplayer.full.WindowVideoPlayer;
-
-import org.greenrobot.eventbus.EventBus;
-
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 
@@ -50,6 +48,8 @@ public class VerticalVideoPlayActivity extends BaseActivity<ActivityVerticalVide
 
     private static final String TAG =VerticalVideoPlayActivity.class.getSimpleName();
     private List<Fragment> mFragments;
+    private int mItemPoistion;
+
     //    /**
 //     * 首页，或其他界面跳转而来，需要传入fragmentType
 //     * @param context
@@ -106,13 +106,13 @@ public class VerticalVideoPlayActivity extends BaseActivity<ActivityVerticalVide
                     bindingView.viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                         @Override
                         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
                         }
                         @Override
                         public void onPageSelected(int position) {
-                            if(0==position){
-                                WindowVideoPlayer.goOnPlayOnResume();
-                                onChildFragmentResume(true);
-                            }else if(1==position){
+                            mItemPoistion=position;
+                            //暂停视频播放，如果正在播放的话
+                            if(1==position){
                                 WindowVideoPlayer.goOnPlayOnPause();
                                 onChildFragmentResume(false);
                             }
@@ -120,6 +120,12 @@ public class VerticalVideoPlayActivity extends BaseActivity<ActivityVerticalVide
 
                         @Override
                         public void onPageScrollStateChanged(int state) {
+                            //手势滑动停止的时候，并且回到了视频播放界面
+                            Logger.d(TAG,"state="+state);
+                            if(state==0&&0==mItemPoistion){
+                                WindowVideoPlayer.goOnPlayOnResume();
+                                onChildFragmentResume(true);
+                            }
                         }
                     });
                     bindingView.viewPager.setAdapter(new XinQuFragmentPagerAdapter(getSupportFragmentManager(), mFragments));

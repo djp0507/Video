@@ -17,8 +17,8 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:text="item"
-            android:textSize="16sp"
-            android:textColor="@color/text_tab_selector"/>
+            android:textSize="15sp"
+            android:textColor="@color/text_gray_tab_selector"/>
     </RelativeLayout>
     <View
         android:id="@+id/view_bottom_line"

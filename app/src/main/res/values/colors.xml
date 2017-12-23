@@ -89,7 +89,7 @@
     <!--通用二级标题的颜色-->
     <color name="gray_round">#7C7F89</color>
     <color name="text_gray_round">#3d414d</color>
-    <color name="common_h2">#767676</color>
+    <color name="common_h2">#777777</color>
     <color name="coment_color">#FF333333</color>
     <color name="common_h22">#CDCDCD</color>
     <!--通用三级标题的颜色-->
