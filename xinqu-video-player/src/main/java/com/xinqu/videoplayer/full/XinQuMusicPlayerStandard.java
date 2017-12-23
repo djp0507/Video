@@ -247,7 +247,6 @@ public class XinQuMusicPlayerStandard extends WindowVideoPlayer {
             case SCREEN_WINDOW_TINY:
                 break;
         }
-
     }
 
     public void changeUiToPreparingClear() {

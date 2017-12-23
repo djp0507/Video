@@ -196,12 +196,12 @@
         "source": "C:\\Users\\YangCheng\\.android\\build-cache\\3ac69bb939455fd0493b179fb529e952718bbd8f\\output\\res\\drawable\\notification_bg_low.xml"
     },
     {
-        "merged": "F:\\AndroidStudioProjects\\Video\\xinqu-video-player\\build\\intermediates\\res\\merged\\androidTest\\debug\\drawable\\jz_title_bg.9.png",
-        "source": "F:\\AndroidStudioProjects\\Video\\xinqu-video-player\\build\\intermediates\\bundles\\debug\\res\\drawable\\jz_title_bg.9.png"
-    },
-    {
         "merged": "F:\\AndroidStudioProjects\\Video\\xinqu-video-player\\build\\intermediates\\res\\merged\\androidTest\\debug\\drawable\\abc_seekbar_tick_mark_material.xml",
         "source": "C:\\Users\\YangCheng\\.android\\build-cache\\3ac69bb939455fd0493b179fb529e952718bbd8f\\output\\res\\drawable\\abc_seekbar_tick_mark_material.xml"
+    },
+    {
+        "merged": "F:\\AndroidStudioProjects\\Video\\xinqu-video-player\\build\\intermediates\\res\\merged\\androidTest\\debug\\drawable\\jz_title_bg.9.png",
+        "source": "F:\\AndroidStudioProjects\\Video\\xinqu-video-player\\build\\intermediates\\bundles\\debug\\res\\drawable\\jz_title_bg.9.png"
     },
     {
         "merged": "F:\\AndroidStudioProjects\\Video\\xinqu-video-player\\build\\intermediates\\res\\merged\\androidTest\\debug\\drawable\\jc_seek_thumb_pressed.xml",
