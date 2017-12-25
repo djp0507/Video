@@ -334,7 +334,7 @@
         1：美女类型
         2：极限运动类型
         -->
-        <meta-data android:name="build_channel_type" android:value="1"/>
+        <meta-data android:name="build_channel_type" android:value="0"/>
 
         <!-- 友盟===统计、分享、登录 -->
         <meta-data
@@ -342,7 +342,7 @@
             android:value="592526c9717c193093000c61"/>
         <meta-data
             android:name="UMENG_CHANNEL"
-            android:value="app_meinv"/>
+            android:value="app_store"/>
         <!--微信-->
         <activity
             android:name=".wxapi.WXEntryActivity"
