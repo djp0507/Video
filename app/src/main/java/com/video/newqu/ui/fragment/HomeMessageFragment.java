@@ -12,7 +12,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.umeng.analytics.MobclickAgent;
 import com.video.newqu.R;
 import com.video.newqu.VideoApplication;
@@ -163,7 +162,20 @@ public class HomeMessageFragment extends BaseMineFragment<MineMessageFragmentRec
                             if(!TextUtils.isEmpty(type)){
                                 if(TextUtils.equals("1",type)){
                                     MobclickAgent.onEvent(getActivity(), "msg_web");
-                                    WebViewActivity.loadUrl(getActivity(),listBean.getUrl(),listBean.getAction());
+                                    if(null!=listBean.getAction()&&TextUtils.equals("新趣小视频",listBean.getAction())){
+                                        WebViewActivity.loadUrl(getActivity(),listBean.getUrl(),listBean.getAction());
+                                        return;
+                                    }
+                                    try {
+                                        Intent intent= new Intent();
+                                        intent.setAction("android.intent.action.VIEW");
+                                        Uri content_url = Uri.parse(listBean.getUrl());
+                                        intent.setData(content_url);
+                                        startActivity(intent);
+                                    } catch (Exception e) {
+                                        //若无法正常跳转，在此进行错误处理
+                                        ToastUtils.shoCenterToast("处理失败："+e.getMessage());
+                                    }
                                 }else if(TextUtils.equals("2",type)){
                                     MobclickAgent.onEvent(getActivity(), "msg_video");
                                     VideoDetailsActivity.start(getActivity(),listBean.getVideo_id(),listBean.getUser_id(),false);
