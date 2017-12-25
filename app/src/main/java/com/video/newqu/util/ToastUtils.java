@@ -14,7 +14,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.video.newqu.R;
 import com.video.newqu.VideoApplication;
 import com.video.newqu.contants.Constant;

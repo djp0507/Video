@@ -25,7 +25,7 @@
             android:layout_centerHorizontal="true"
             android:drawablePadding="5dp"
             android:textSize="13sp"
-            android:visibility="visible"/>
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/tv_tips_mine_message"

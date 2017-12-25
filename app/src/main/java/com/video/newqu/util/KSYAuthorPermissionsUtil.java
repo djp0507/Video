@@ -2,7 +2,6 @@ package com.video.newqu.util;
 
 import com.ksyun.media.shortvideo.utils.AuthInfoManager;
 import com.video.newqu.camera.auth.SignerTest;
-
 import java.util.Iterator;
 import java.util.Map;
 
@@ -33,7 +32,6 @@ public class KSYAuthorPermissionsUtil {
                         @Override
                         public void onAuthResult(int i) {
                             isAuthorPermissions=false;
-                            Logger.d("SDK鉴权结果", AuthInfoManager.getInstance().getAuthState() + "");
                         }
                     });
                     //开始向KSServer申请鉴权

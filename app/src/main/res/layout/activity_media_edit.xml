@@ -58,7 +58,7 @@
         android:id="@+id/media_edit_right_menu_actionbar"
         layout="@layout/media_edit_right_menu_layout"
         android:layout_marginTop="136dp"
-        android:layout_width="66dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"/>
 

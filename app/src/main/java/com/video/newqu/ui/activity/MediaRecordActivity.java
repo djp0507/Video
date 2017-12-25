@@ -83,6 +83,7 @@ import com.video.newqu.ui.dialog.LoadingProgressView;
 import com.video.newqu.manager.ActivityCollectorManager;
 import com.video.newqu.util.AnimationUtil;
 import com.video.newqu.util.ScreenUtils;
+import com.video.newqu.util.SharedPreferencesUtil;
 import com.video.newqu.util.SystemUtils;
 import com.video.newqu.util.ToastUtils;
 import com.video.newqu.util.UnZipTask;
@@ -183,6 +184,7 @@ public class MediaRecordActivity extends AppCompatActivity implements ActivityCo
     private EffectsButton mBtn_record_music;
     private final static int PERMISSION_REQUEST_STORAGE = 1;
     private float fps=24F;
+    private TextView mTipsTextView=null;//第一次使用功能引导提示
 
 
     @Override
@@ -314,6 +316,10 @@ public class MediaRecordActivity extends AppCompatActivity implements ActivityCo
                     //音乐
                     case R.id.btn_record_music:
                         //需要在回删掉所有录制的片段才允许更换音乐
+                        if(null!=mTipsTextView&&mTipsTextView.getVisibility()!=View.GONE){
+                            mTipsTextView.setVisibility(View.GONE);
+                            mTipsTextView=null;
+                        }
                         if(null!=mKSYRecordKit&&mKSYRecordKit.getRecordedFilesCount()<=0){
                             Intent intent=new Intent(MediaRecordActivity.this,MediaRecordMusicActivity.class);
                             startActivityForResult(intent,Constant.MEDIA_START_MUSIC_REQUEST_CODE);
@@ -450,6 +456,21 @@ public class MediaRecordActivity extends AppCompatActivity implements ActivityCo
                 }
             }
         });
+        //第一次使用弹出使用提示
+        if(1!= SharedPreferencesUtil.getInstance().getInt(Constant.TIPS_RECORD_CODE)){
+            mTipsTextView = (TextView) findViewById(R.id.tv_music_tips_message);
+            mTipsTextView.setText(getResources().getString(R.string.tips_first_record_msg));
+            mTipsTextView.setVisibility(View.VISIBLE);
+            mTipsTextView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(null!=mTipsTextView){
+                        mTipsTextView.setVisibility(View.GONE);
+                    }
+                }
+            });
+            SharedPreferencesUtil.getInstance().putInt(Constant.TIPS_RECORD_CODE,1);
+        }
     }
 
     private void invisibleRightMenuView() {

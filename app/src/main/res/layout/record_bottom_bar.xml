@@ -2,7 +2,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
-
     <!--底部控制器-->
     <LinearLayout
         android:id="@+id/default_bottom_layout"
@@ -164,11 +163,9 @@
         android:layout_height="160dp"
         android:layout_alignParentBottom="true"
         android:visibility="invisible"/>
-
-    <!--侧边控制菜单-->
     <include
         android:id="@+id/record_right_menu_layout"
-        android:layout_width="66dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         layout="@layout/record_right_menu_layout"

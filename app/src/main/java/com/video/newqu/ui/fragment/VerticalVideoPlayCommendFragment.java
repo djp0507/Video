@@ -1,12 +1,10 @@
 package com.video.newqu.ui.fragment;
 
-import android.content.DialogInterface;
 import android.databinding.DataBindingUtil;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.text.Editable;
@@ -47,8 +45,6 @@ import java.lang.ref.WeakReference;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-
-import static android.R.attr.id;
 
 /**
  * TinyHung@Outlook.com
@@ -304,6 +300,7 @@ public class VerticalVideoPlayCommendFragment extends BaseVerticalDialogFragment
                         bindingView.tvInputContent.setText(topicStyleContent);
                     }else{
                         bindingView.tvInputContent.setText(inputText);
+                        Logger.d(TAG,"toUserID"+toUserID);
                         toUserID="0";
                     }
                 }
@@ -312,12 +309,6 @@ public class VerticalVideoPlayCommendFragment extends BaseVerticalDialogFragment
                 @Override
                 public void onSubmit() {
                     sendMessage();
-                }
-            });
-            inputKeyBoardDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialogInterface) {
-
                 }
             });
             inputKeyBoardDialog.show();

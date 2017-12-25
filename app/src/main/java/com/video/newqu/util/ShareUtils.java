@@ -126,9 +126,6 @@ public class ShareUtils {
             return videoThumbnail;
         }
 
-
-
-
         @Override
         protected void onPostExecute(Bitmap bitmap) {
             super.onPostExecute(bitmap);

@@ -110,6 +110,7 @@ import com.video.newqu.util.AnimationUtil;
 import com.video.newqu.util.CommonUtils;
 import com.video.newqu.util.FaceConversionUtil;
 import com.video.newqu.util.ScreenUtils;
+import com.video.newqu.util.SharedPreferencesUtil;
 import com.video.newqu.util.SystemUtils;
 import com.video.newqu.util.TextViewTopicSpan;
 import com.video.newqu.util.ToastUtils;
@@ -268,6 +269,7 @@ public class MediaEditActivity extends AppCompatActivity implements ActivityComp
     private boolean firstAddTextSticker=true;
     private boolean isScreenThubm=false;//是否正在截图
     private WeakReference<MediaEditPresenter> mMediaEditPresenterWeakReference;
+    private TextView mTipsTextView=null;//第一次使用功能提示
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -377,6 +379,10 @@ public class MediaEditActivity extends AppCompatActivity implements ActivityComp
                         break;
                     //音乐
                     case R.id.btn_music:
+                        if(null!=mTipsTextView&&mTipsTextView.getVisibility()!=View.GONE){
+                            mTipsTextView.setVisibility(View.GONE);
+                            mTipsTextView=null;
+                        }
                         poistion=6;
                         break;
                 }
@@ -692,6 +698,21 @@ public class MediaEditActivity extends AppCompatActivity implements ActivityComp
         mOriginAudioVolumeSeekBar.setProgress((int) mEditKit.getOriginAudioVolume() * 100);
         mBgmVolumeSeekBar.setProgress((int) mEditKit.getBgmVolume() * 100);
         slidingDrawer.animateOpen();//默认开启抽屉
+        //第一次使用弹出使用提示
+        if(1!= SharedPreferencesUtil.getInstance().getInt(Constant.TIPS_MEDIA_EDIT_CODE)){
+            mTipsTextView = (TextView) findViewById(R.id.tv_music_tips_message);
+            mTipsTextView.setText(getResources().getString(R.string.tips_first_record_msg));
+            mTipsTextView.setVisibility(View.VISIBLE);
+            mTipsTextView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(null!=mTipsTextView){
+                        mTipsTextView.setVisibility(View.GONE);
+                    }
+                }
+            });
+            SharedPreferencesUtil.getInstance().putInt(Constant.TIPS_MEDIA_EDIT_CODE,1);
+        }
     }
 
     /**

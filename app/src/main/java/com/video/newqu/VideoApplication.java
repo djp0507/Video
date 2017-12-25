@@ -19,7 +19,6 @@ import com.video.newqu.bean.UserData;
 import com.video.newqu.contants.ApplicationManager;
 import com.video.newqu.contants.ConfigSet;
 import com.video.newqu.contants.Constant;
-import com.video.newqu.manager.ThreadManager;
 import com.video.newqu.util.ACache;
 import com.video.newqu.util.CommonDateParseUtil;
 import com.video.newqu.util.ContentCheckKey;
@@ -59,17 +58,10 @@ public class VideoApplication extends Application {
         MultiDex.install(base);
     }
 
-    //极光 appkey:24dca46eb98b3f3d93667b20  secret:d5ac29ce99a07ab51a7b8e26
     public static VideoApplication getInstance() {
         return mInstance;
     }
 
-    /**友盟分享设置每次都授权
-     UMShareConfig config = new UMShareConfig();
-     config.isNeedAuthOnGetUserInfo(true);
-     UMShareAPI.get(InfoDetailActivity.this).setShareConfig(config);\
-     鉴权：MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDMWEKeQiYlkjHPlByIVlbqcYsHlJ5SYkjXqVgvgqbSemloFDfySaYxsWnv8cyq9agYlb8PxjjQcWWqL06O5HKp1cedbUbjlZ3mRb3qnkLH4j8QTQjyPW6F2nvWln6djF10b2RdGSsYZYqLEk1QkQk50QL1gUiL8KtPiDReJet4uQIDAQAB
-     */
     @Override
     public void onCreate() {
         super.onCreate();
@@ -80,10 +72,10 @@ public class VideoApplication extends Application {
         PlatformConfig.setSinaWeibo("994868311", "908f16503b8ebe004cdf9395cebe1b14","http://sns.whalecloud.com/sina2/callback");//设置微博分享/登录SDK//https://api.weibo.com/oauth2/default.html
         PlatformConfig.setQQZone("1106176094","Pkas3I3J2OpaZzsH");//设置QQ/空间SDK账号
         //初始化友盟分享
-        UMShareAPI.get(VideoApplication.this);
+        UMShareAPI.get(appContext);
         Utils.init(this);
         SharedPreferencesUtil.init(getApplicationContext(), getPackageName() + "xinquConfig", Context.MODE_MULTI_PROCESS);
-        ACache cache = ACache.get(VideoApplication.this);
+        ACache cache = ACache.get(appContext);
         ApplicationManager.getInstance().setCacheExample(cache);//初始化后需要设置给通用管理者
         UserData.DataBean.InfoBean userData = (UserData.DataBean.InfoBean)  ApplicationManager.getInstance().getCacheExample().getAsObject(Constant.CACHE_USER_DATA);
         setUserData(userData,false);
@@ -91,24 +83,23 @@ public class VideoApplication extends Application {
         mUuid = GoagalInfo.get().uuid;
         HttpConfig.setPublickey(Constant.URL_PRIVATE_KEY);
         //极光消息推送
+        JPushInterface.init(appContext);
         JPushInterface.setDebugMode(true);
-        JPushInterface.init(VideoApplication.this);
-//        BasicPushNotificationBuilder builder = new BasicPushNotificationBuilder(getApplicationContext());
-//        builder.notificationFlags=0x666;//通知的标记
-//        JPushInterface.setDefaultPushNotificationBuilder(builder);
+        BasicPushNotificationBuilder builder = new BasicPushNotificationBuilder(getApplicationContext());
+        builder.notificationFlags=0x666;//通知的标记
+        JPushInterface.setDefaultPushNotificationBuilder(builder);
         ContentCheckKey.getInstance().init();
-        GoagalInfo.get().init(VideoApplication.this);
+        GoagalInfo.get().init(appContext);
         ApplicationManager.getInstance().initSDPath();
         //金山云硬解白名单
-        KSYHardwareDecodeWhiteList.getInstance().init(VideoApplication.this);
-        MobclickAgent.setScenarioType(VideoApplication.this, MobclickAgent.EScenarioType.E_UM_NORMAL);//普通统计模式
+        KSYHardwareDecodeWhiteList.getInstance().init(appContext);
+        MobclickAgent.setScenarioType(appContext, MobclickAgent.EScenarioType.E_UM_NORMAL);//普通统计模式
         ConfigSet.getInstance().init();
         //第一次打开程序,初始化设置项
         if(1!=SharedPreferencesUtil.getInstance().getInt(Constant.IS_FIRST_START)){
             ConfigSet.getInstance().initSetting();
             SharedPreferencesUtil.getInstance().putInt(Constant.IS_FIRST_START,1);
         }
-
         if(1!=SharedPreferencesUtil.getInstance().getInt(Constant.IS_FIRST_START_DB)){
             if(ApplicationManager.getInstance().getVideoUploadDB().getUploadVideoList().size()>0){
                 try {
@@ -123,8 +114,8 @@ public class VideoApplication extends Application {
             int todayWeekSundy = DateParseUtil.getTodayWeekSundy();
             SharedPreferencesUtil.getInstance().putInt(Constant.SETTING_TODAY_WEEK_SUNDY,todayWeekSundy);//保存第一次安装时候的星期日期
         }
-        Fresco.initialize(VideoApplication.this);//动态贴纸解析必须
-        MobSDK.init(VideoApplication.this, "1ecf369922dc5", "aaf891da7ce90d40d52de6bedf5bf89c");
+        Fresco.initialize(appContext);//动态贴纸解析必须
+        MobSDK.init(appContext, "1ecf369922dc5", "aaf891da7ce90d40d52de6bedf5bf89c");
         //初始化全局异常拦截
         //CrashHanlder.getInstance().init(VideoApplication.this);
         //LeakCanary.install(VideoApplication.this);//内存泄漏检测

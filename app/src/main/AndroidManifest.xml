@@ -334,7 +334,7 @@
         1：美女类型
         2：极限运动类型
         -->
-        <meta-data android:name="build_channel_type" android:value="0"/>
+        <meta-data android:name="build_channel_type" android:value="1"/>
 
         <!-- 友盟===统计、分享、登录 -->
         <meta-data

@@ -285,7 +285,6 @@ public class VerticalPlayeViewPager extends BasePager<VerticalPagerVideoPlayLayo
 
             HttpProxyCacheServer proxy = VideoApplication.getProxy();
             String proxyUrl = proxy.getProxyUrl(mVideoBean.getPath());
-
             bindingView.videoPlayer.setUp(proxyUrl, WindowVideoPlayer.SCREEN_WINDOW_LIST, ConfigSet.getInstance().isPalyerLoop(),mVideoBean.getDesp());
             //开始播放了
             bindingView.videoPlayer.setOnPlayerCallBackListener(new WindowVideoPlayer.OnPlayerCallBackListener() {
